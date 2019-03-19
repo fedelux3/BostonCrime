@@ -6,7 +6,6 @@ Created on Mon Mar 18 09:20:44 2019
 """
 
 import csv
-import sys
 
 wr = open("dataset.csv", "w", newline="")
 
