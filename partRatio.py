@@ -7,16 +7,17 @@ Created on Tue Mar 19 11:53:20 2019
 
 import csv
 import datetime
+
 #input coordinate stringhe
 #output coordinate intere 
 def parserLocation(lat, long):
    assert(len(lat) == 13) #se non è un valore corretto di latitudine
-   strlat = lat[0] + lat[2:5] + lat[6:9] + lat[10:13]
+   strlat = lat[0] + lat[2] + lat[3:5] + lat[6:9] + lat[10:13]
    
    assert(len(long) == 14) #se non è un valore corretto di latitudine
    strlong = long[1] + long[3:6] + long[7:10] + long[11:14]
    #print(str)
-   return [int(strlat), int(strlong)]
+   return [int(strlat)/100000000, int(strlong)/100000000]
 #end parserLocation
    
 #input data e ora stringa
@@ -42,6 +43,7 @@ def distanceTime(timeE, timeP) :
 #input due coordinate intere
 #output max distanza tra le due coppie
 def distanceLocation(lat1, long1, lat2, long2) :
+   
    dlat = abs(lat1 - lat2)
    dlong = abs(long1 - long2)
    return max(dlat, dlong)
@@ -52,7 +54,7 @@ def distanceLocation(lat1, long1, lat2, long2) :
 def neighborhood(event) :
    #raggio spaziale della location
    #coordinate hanno 10 cifre
-   r = 1000000
+   r = 0.007
    #raggio temporale di 7 giorni
    t = 3.5
    #neighbothood with respect to event type
@@ -88,7 +90,7 @@ def neighborhood(event) :
                nfe.append(crime)
       #end for
       
-      return nfe
+   return nfe
 #end neighborhood
    
 
@@ -104,5 +106,4 @@ with open("test2.csv", newline= "", encoding="ISO-8859-1") as fileread:
    
    for record in recordTest[1:11]:
       nei.append(neighborhood(record))
-
 
