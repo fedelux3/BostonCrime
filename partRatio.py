@@ -17,7 +17,8 @@ def parserLocation(lat, long):
    strlong = long[1] + long[3:6] + long[7:10] + long[11:14]
    #print(str)
    return [int(strlat), int(strlong)]
-
+#end parserLocation
+   
 #input data e ora stringa
 #output giorni (intero)
 def distanceTime(timeE, timeP) :
@@ -36,14 +37,18 @@ def distanceTime(timeE, timeP) :
    dP = datetime.date(yearsP, monthsP, daysP)
    
    return abs(dE - dP).days
-
+#end distanceTime
+   
 #input due coordinate intere
 #output max distanza tra le due coppie
 def distanceLocation(lat1, long1, lat2, long2) :
    dlat = abs(lat1 - lat2)
    dlong = abs(long1 - long2)
    return max(dlat, dlong)
-
+#end distanceLocation
+   
+#input event
+#output neigborhood event
 def neighborhood(event) :
    #raggio spaziale della location
    #coordinate hanno 10 cifre
@@ -55,12 +60,12 @@ def neighborhood(event) :
    
    with open("dataset.csv", newline="", encoding="ISO-8859-1") as filecsv:
       
-      lettore = csv.reader(filecsv,  dialect = 'excel', delimiter= ";")
-      
+      readData = csv.reader(filecsv,  dialect = 'excel', delimiter= ";")
+   
       #lettore = next(lettore)
       #print(header)
       
-      recordData = [(col[0], col[1], col[2], col[3], col[4], col[5], col[6], col[7]) for col in lettore]
+      recordData = [(col[0], col[1], col[2], col[3], col[4], col[5], col[6], col[7]) for col in readData]
       
       for crime in recordData[1:]:
          #print(event)
@@ -81,20 +86,23 @@ def neighborhood(event) :
             #escludo se stesso
             if diffDays <= t and event != crime:
                nfe.append(crime)
-
-   return nfe
+      #end for
+      
+      return nfe
+#end neighborhood
+   
 
 #MAIN
 
 nei = []
 with open("test2.csv", newline= "", encoding="ISO-8859-1") as fileread:
 
-   lettore = csv.reader(fileread, dialect = 'excel', delimiter= ',')
+   lettore = csv.reader(fileread, dialect = 'excel', delimiter= ';')
    
    recordTest = [(col[0], col[1], col[2], col[3], col[4], col[5], col[6], col[7]) for col in lettore]
    
    
-   for record in recordTest:
+   for record in recordTest[1:11]:
       nei.append(neighborhood(record))
 
 
