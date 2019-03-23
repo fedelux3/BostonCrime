@@ -20,6 +20,8 @@ def parserLocation(lat, long):
    
 def distanceLocation(lat1, long1, lat2, long2) :
    #conversione in radianti
+   
+   
    lat1 = lat1*(2*math.pi)/360
    long1 = long1*(2*math.pi)/360
    lat2 = lat2*(2*math.pi)/360
@@ -28,4 +30,35 @@ def distanceLocation(lat1, long1, lat2, long2) :
    dist = math.acos( math.sin(lat1) * math.sin(lat2) 
       + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)) * 6371
    
-   return dist
+   return round(dist,2)
+#end distanceLocation
+#
+#def parserLocation(lat, long):
+#   assert(len(lat) == 13) #se non è un valore corretto di latitudine
+#   strlat = lat[0] + lat[2] + lat[3:5] + lat[6:9] + lat[10:13]
+#   
+#   assert(len(long) == 14) #se non è un valore corretto di latitudine
+#   strlong = long[1] + long[3:6] + long[7:10] + long[11:14]
+#   #print(str)
+#   return [int(strlat)/100000000, int(strlong)/100000000]
+##end parserLocation
+#
+##input due coordinate intere
+##output max distanza tra le due coppie
+#def distanceLocation(lat1, long1, lat2, long2) :
+#   
+#   dlat = abs(lat1 - lat2)
+#   dlong = abs(long1 - long2)
+#   return max(dlat, dlong)
+##end distanceLocation
+   
+#MAIN
+lat1 = "4.286.271.623"
+long1 = "-7.123.592.345"
+lat2 = "4.291.272.312"
+long2 = "-7.151.209.354"
+
+[l1, lo1] = parserLocation(lat1,long1)
+[l2, lo2] = parserLocation(lat2,long2)
+
+dist = distanceLocation(l1,lo1,l2,lo2)

@@ -7,6 +7,7 @@ Created on Tue Mar 19 11:53:20 2019
 
 import csv
 import datetime
+import math
 
 #input coordinate stringhe
 #output coordinate intere 
@@ -15,10 +16,26 @@ def parserLocation(lat, long):
    strlat = lat[0] + lat[2] + lat[3:5] + lat[6:9] + lat[10:13]
    
    assert(len(long) == 14) #se non è un valore corretto di latitudine
-   strlong = long[1] + long[3:6] + long[7:10] + long[11:14]
+   strlong = long[0:2] + long[3] + long[4:6] + long[7:10] + long[11:14]
    #print(str)
    return [int(strlat)/100000000, int(strlong)/100000000]
 #end parserLocation
+   
+def distanceLocation(lat1, long1, lat2, long2) :
+   #conversione in radianti
+   
+   
+   lat1 = lat1*(2*math.pi)/360
+   long1 = long1*(2*math.pi)/360
+   lat2 = lat2*(2*math.pi)/360
+   long2 = long2*(2*math.pi)/360
+   
+   dist = math.acos( math.sin(lat1) * math.sin(lat2) 
+      + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)) * 6371
+   
+   assert(dist >= 0)
+   return round(dist, 2)
+#end distanceLocation
    
 #input data e ora stringa
 #output giorni (intero)
@@ -40,49 +57,39 @@ def distanceTime(timeE, timeP) :
    return abs(dE - dP).days
 #end distanceTime
    
-#input due coordinate intere
-#output max distanza tra le due coppie
-def distanceLocation(lat1, long1, lat2, long2) :
-   
-   dlat = abs(lat1 - lat2)
-   dlong = abs(long1 - long2)
-   return max(dlat, dlong)
-#end distanceLocation
-   
 #input event
 #output neigborhood event
 def neighborhood(event) :
-   #raggio spaziale della location
-   #coordinate hanno 10 cifre
-   r = 0.007
+   #raggio spaziale della location (km)
+   r = 2.5
    #raggio temporale di 7 giorni
    t = 3.5
    #neighbothood with respect to event type
    nfe = []
    
-   with open("dataset.csv", newline="", encoding="ISO-8859-1") as filecsv:
+   with open("dataset2018.csv", newline="", encoding="ISO-8859-1") as filecsv:
       
       readData = csv.reader(filecsv,  dialect = 'excel', delimiter= ";")
    
       #lettore = next(lettore)
       #print(header)
       
-      recordData = [(col[0], col[1], col[2], col[3], col[4], col[5], col[6], col[7]) for col in readData]
+      recordData = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in readData]
       
       for crime in recordData[1:]:
          #print(event)
          #print(crime[5])
-         [late, longe] = parserLocation(event[5], event[6])
-         [latp, longp] = parserLocation(crime[5], crime[6])
-         timee = event[3]
-         timep = crime[3]
+         [late, longe] = parserLocation(event[4], event[5])
+         [latp, longp] = parserLocation(crime[4], crime[5])
+         #timee = event[2]
+         #timep = crime[2]
          #print(timee)
          #print(timep)
          
          #se è entro il raggio spaziale
          if distanceLocation(late, longe, latp, longp) <= r:
-            timee = event[3]
-            timep = crime[3]
+            timee = event[2]
+            timep = crime[2]
             diffDays = distanceTime(timee, timep)
             #se è entro il raggio temporale
             #escludo se stesso
@@ -97,13 +104,13 @@ def neighborhood(event) :
 #MAIN
 
 nei = []
-with open("test2.csv", newline= "", encoding="ISO-8859-1") as fileread:
+with open("test2018.csv", newline= "", encoding="ISO-8859-1") as fileread:
 
    lettore = csv.reader(fileread, dialect = 'excel', delimiter= ';')
    
-   recordTest = [(col[0], col[1], col[2], col[3], col[4], col[5], col[6], col[7]) for col in lettore]
+   recordTest = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in lettore]
    
    
-   for record in recordTest[1:11]:
+   for record in recordTest[1:]:
       nei.append(neighborhood(record))
 
