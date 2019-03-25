@@ -59,15 +59,15 @@ def distanceTime(timeE, timeP) :
    
 #input event
 #output neigborhood event
-def neighborhood(event) :
+def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
    r = 2.5
    #raggio temporale di 7 giorni
-   t = 3.5
+   t = 2
    #neighbothood with respect to event type
    nfe = []
    
-   with open("dataset2018.csv", newline="", encoding="ISO-8859-1") as filecsv:
+   with open("test2018.csv", newline="", encoding="ISO-8859-1") as filecsv:
       
       readData = csv.reader(filecsv,  dialect = 'excel', delimiter= ";")
    
@@ -86,31 +86,99 @@ def neighborhood(event) :
          #print(timee)
          #print(timep)
          
-         #se è entro il raggio spaziale
-         if distanceLocation(late, longe, latp, longp) <= r:
-            timee = event[2]
-            timep = crime[2]
-            diffDays = distanceTime(timee, timep)
-            #se è entro il raggio temporale
-            #escludo se stesso
-            if diffDays <= t and event != crime:
-               nfe.append(crime)
+         #se di tipo specificato
+         if crime[1] == typeF:
+            #se è entro il raggio spaziale
+            if distanceLocation(late, longe, latp, longp) <= r:
+               timee = event[2]
+               timep = crime[2]
+               diffDays = distanceTime(timee, timep)
+               #se è entro il raggio temporale
+               #escludo se stesso
+               if diffDays <= t and event != crime:
+                  nfe.append(crime)
       #end for
       
    return nfe
 #end neighborhood
    
+#input sequenza di m tipi di eventi
+#output insieme di istanze associate
+def setInstances(seqTypes):
+   set_init = set()
+   
+   with open("test2018.csv", newline="", encoding="ISO-8859-1") as fileread:
+      
+      reader = csv.reader(fileread, dialect = 'excel', delimiter= ';')
+   
+      recordRead = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in reader]
+   
+      firstType = seqTypes[0]
+      
+      for record in recordRead[1:]:
+         if record[1] == firstType:
+            set_init.add(record[0])
+      
+      #insieme del elemento di sequenza precedente
+      set_prev = set_init
+      for i in range(1,len(seqTypes)):
+         current = seqTypes[i]
+         set_return = set()
+         for event in set_prev:
+            
+            ev = None
+            #ricerco la tupla che mi interessa
+            for tupla in recordRead[1:]:
+               if record[0] == event:
+                  ev = tupla
+                  exit
+            #################################
+            #QUA DEVI CAPIRE COME CONCATENARE I NEIGHBORHOOD 
+            #e nel caso fare l'unione dei neighborhood validi
+            #ne = neighborhood(ev, current)
+            #################################
+   #end with      
+   
+   return set_return
+#end setInstance
 
 #MAIN
 
-nei = []
-with open("test2018.csv", newline= "", encoding="ISO-8859-1") as fileread:
+seq = ["Aggravated Assault"]
 
-   lettore = csv.reader(fileread, dialect = 'excel', delimiter= ';')
-   
-   recordTest = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in lettore]
-   
-   
-   for record in recordTest[1:]:
-      nei.append(neighborhood(record))
+ins = setInstances(seq)
+print(len(ins))
 
+#TEST Neighboorhood
+#nei = []
+#with open("test2018.csv", newline= "", encoding="ISO-8859-1") as fileread:
+#
+#   lettore = csv.reader(fileread, dialect = 'excel', delimiter= ';')
+#   
+#   recordTest = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in lettore]
+#   
+#   
+#   for record in recordTest[1:]:
+#      nei.append(neighborhood(record))
+
+#TEST UCR=Part One
+#types = ["Aggravated Assault", "Auto Theft", "Larceny", "Robbery", "Residential Burglary",
+#         "Larceny From Motor Vehicle", "Homicide", "Commercial Burglary", "Other Burglary"]
+#ev = []
+#with open("test2018.csv", newline="", encoding="ISO-8859-1") as fileread:
+#   
+#   reader = csv.reader(fileread, dialect = 'excel', delimiter= ';')
+#   
+#   recordRead = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in reader]
+#   
+#   for record in recordRead[1:]:
+#      if record[1] == types[0]:
+#         ev.append(record)  
+
+   
+   
+   
+   
+   
+   
+   
