@@ -62,9 +62,9 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 5.5
+   r = 0.1
    #raggio temporale di 7 giorni
-   t = 4
+   t = 1
    #neighbothood with respect to event type
    nfe = set()
    
@@ -77,7 +77,7 @@ def neighborhood(event, typeF) :
       
       recordData = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in readData]
       
-      for crime in recordData[1:2000]:
+      for crime in recordData[1:]:
          #print(event)
          #print(crime[5])
          [late, longe] = parserLocation(event[4], event[5])
@@ -107,10 +107,15 @@ def neighborhood(event, typeF) :
 #output insieme ti tutti gli eventi di quel tipo
 def setD(typeD) :
    setReturn = set()
-   for record in recordRead[1:2000]:
-      if record[1] == typeD:
-         setReturn.add(record[0])
-   return setReturn
+   with open("test2018.csv", newline="", encoding="ISO-8859-1") as filecsv:
+      
+      readData = csv.reader(filecsv,  dialect = 'excel', delimiter= ";")
+      recordData = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in readData]
+      
+      for record in recordData[1:]:
+         if record[1] == typeD:
+            setReturn.add(record[0])
+      return setReturn
 #end setD
    
 #input sequenza di m tipi di eventi
@@ -125,10 +130,6 @@ def setInstances(seqTypes):
       recordRead = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in reader]
       
       set_init = setD(seqTypes[0])
-#      firstType = seqTypes[0]
-#      for record in recordRead[1:2000]:
-#         if record[1] == firstType:
-#            set_init.add(record[0])
       
       #insieme del elemento di sequenza precedente
       set_prev = set_init
@@ -149,52 +150,64 @@ def setInstances(seqTypes):
             neig = neighborhood(ev, currentType)
             #print(neig)
             set_return = set_return.union(neig)
-            #################################
-            #QUA DEVI CAPIRE COME CONCATENARE I NEIGHBORHOOD 
-            #e nel caso fare l'unione dei neighborhood validi
-            #ne = neighborhood(ev, current)
-            #################################
+            
    #end with      
    
    return set_return
 #end setInstance
 
+#input sequenza di tipi
+#output valore di partitipation rateo della sequenza
+def computePR(seqTypes):
+   ins = setInstances(seqTypes)
+   n_el = len(seqTypes)
+   print(len(ins))
+   d_ins = setD(seqTypes[n_el-1])
+   print(len(d_ins))
+   pr = len(ins)/len(d_ins)
+   
+   return pr
+#end computePR
 #MAIN
 
+#TEST PR
+#seq = ["Homicide", "Residential Burglary"]
+#pr = computePR(seq)
+#print(pr)
+
 #TEST set instance
-#seq = ["Larceny", "Homicide"]
-#
-#ins = setInstances(seq)
-#
-#print(len(ins))
-#
-#evento = []
-#with open("test2018.csv", newline="", encoding="ISO-8859-1") as fileread:
-#      
-#   reader = csv.reader(fileread, dialect = 'excel', delimiter= ';')
-#   recordRead = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in reader]
-#   
-#   for tupla in recordRead[1:]:
-#      for ev in ins:
-#         if tupla[0] == ev:
-#            evento.append(tupla)
-#
-#print(evento)
+seq = ["Larceny", "Homicide"]
+
+ins = setInstances(seq)
+
+evento = []
+with open("test2018.csv", newline="", encoding="ISO-8859-1") as fileread:
+      
+   reader = csv.reader(fileread, dialect = 'excel', delimiter= ';')
+   recordRead = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in reader]
+   
+   for tupla in recordRead[1:]:
+      for ev in ins:
+         if tupla[0] == ev:
+            evento.append(tupla)
+
+print(evento)
+print(len(ins))
 
 #TEST Neighboorhood
-n = None
-with open("test2018.csv", newline= "", encoding="ISO-8859-1") as fileread:
-
-   lettore = csv.reader(fileread, dialect = 'excel', delimiter= ';')
-   
-   recordTest = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in lettore]
-   
-   
-   for record in recordTest[1:]:
-      if record[0] == 'I182011110':
-         n = neighborhood(record, "Larceny")
-   
-   print(len(n))
+#n = None
+#with open("test2018.csv", newline= "", encoding="ISO-8859-1") as fileread:
+#
+#   lettore = csv.reader(fileread, dialect = 'excel', delimiter= ';')
+#   
+#   recordTest = [(col[0], col[1], col[2], col[3], col[4], col[5]) for col in lettore]
+#   
+#   
+#   for record in recordTest[1:]:
+#      if record[0] == 'I182011110':
+#         n = neighborhood(record, "Larceny")
+#   
+#   print(len(n))
 
 #TEST UCR=Part One
 #types = ["Aggravated Assault", "Auto Theft", "Larceny", "Robbery", "Residential Burglary",
