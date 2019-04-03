@@ -37,7 +37,7 @@ def distanceLocation(lat1, long1, lat2, long2) :
       + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)) * 6371
    
    assert(dist >= 0)
-   return round(dist, 2)
+   return dist
 #end distanceLocation
    
 #input data e ora stringa
@@ -64,13 +64,13 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 0.05
+   r = 0.1
    #raggio temporale di 7 giorni
-   t = 1
+   t = 3
    #neighbothood with respect to event type
    nfe = set()
    
-   sql = "SELECT * FROM crimedata2018"
+   sql = "SELECT * FROM crimedata2018small"
    
    mycursor.execute(sql)
    
@@ -106,7 +106,7 @@ def neighborhood(event, typeF) :
 def setD(typeD) :
    setReturn = set()
    
-   sql = "SELECT * FROM crimedata2018 WHERE offence_code_group = \"" + typeD + "\""   
+   sql = "SELECT * FROM crimedata2018small WHERE offence_code_group = \"" + typeD + "\""   
    
    mycursor.execute(sql)
    
@@ -118,7 +118,7 @@ def setD(typeD) :
 #input sequenza di m tipi di eventi
 #output insieme di istanze associate
 def setInstances(seqTypes):
-
+   
    set_return = set()
    
    #insieme del elemento di sequenza precedente
@@ -134,7 +134,7 @@ def setInstances(seqTypes):
       
       for event in set_prev:
         
-         sql = "SELECT * FROM crimedata2018 WHERE incident_num = \"" + event + "\""
+         sql = "SELECT * FROM crimedata2018small WHERE incident_num = \"" + event + "\""
          
          mycursor.execute(sql)
          #la tupla che mi interessa
@@ -148,9 +148,10 @@ def setInstances(seqTypes):
    return set_return
 #end setInstance
 
-#input sequenza di tipi
+#input sequenza di 2 tipi
 #output valore di partitipation rateo della sequenza
 def computePR(seqTypes):
+   assert(len(seqTypes) == 2) #lunghezza sequenza deve essere di 2
    ins = setInstances(seqTypes)
    n_el = len(seqTypes)
    print(len(ins))
@@ -160,6 +161,18 @@ def computePR(seqTypes):
    
    return pr
 #end computePR
+
+#input sequenza di tipi
+#output valore del participation index
+def computePI(seqTypes):
+   m = len(seqTypes)
+   if m == 2:
+      return computePR(seqTypes)
+   else:
+      pr = computePR([seqTypes[m-2], seqTypes[m-1]])
+      return min(computePI(seqTypes[:m-1]), pr)
+#end computePI
+      
 #MAIN
 
 #TEST mySQL
@@ -172,8 +185,18 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 
+
+#TEST computePI
+seq = ["Commercial Burglary", "Robbery", "Auto Theft"]
+pi = computePI(seq)
+print(pi)
+
+#TEST computePR
+#seq = ["Commercial Burglary", "Auto Theft"]
+#pr = computePR(seq)
+#print(pr)
 #TEST setInstances
-seq = ["Aggravated Assault", "Residential Burglary"]
+#seq = ["Commercial Burglary", "Auto Theft"]
 #ins = setInstances(seq)
 #print(ins)
 #for i in ins:
@@ -181,9 +204,9 @@ seq = ["Aggravated Assault", "Residential Burglary"]
 #   mycursor.execute(sql)
 #   row = mycursor.fetchone()
 #   print(row)
-pr = computePR(seq)
+
 #TEST setD
-#typeE = "Larceny"
+#typeE = "Aggravated Assault"
 #s = setD(typeE)
 #print(s)
 
