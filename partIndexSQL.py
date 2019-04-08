@@ -5,7 +5,6 @@ Created on Tue Mar 19 11:53:20 2019
 @author: fede9
 """
 
-import csv
 import datetime
 import math
 import mysql.connector
@@ -25,8 +24,6 @@ def parserLocation(lat, long):
    
 def distanceLocation(lat1, long1, lat2, long2) :
    #conversione in radianti
-   
-   
    lat1 = round(lat1*(2*math.pi)/360, 2)
    long1 = round(long1*(2*math.pi)/360, 2)
    lat2 = round(lat2*(2*math.pi)/360, 2)
@@ -80,11 +77,7 @@ def neighborhood(event, typeF) :
       
       [late, longe] = parserLocation(event[4], event[5])
       [latp, longp] = parserLocation(crime[4], crime[5])
-      #timee = event[2]
-      #timep = crime[2]
-      #print(timee)
-      #print(timep)
-      
+     
       #se di tipo specificato
       if crime[1] == typeF:
          #se è entro il raggio spaziale
@@ -154,9 +147,9 @@ def computePR(seqTypes):
    assert(len(seqTypes) == 2) #lunghezza sequenza deve essere di 2
    ins = setInstances(seqTypes)
    n_el = len(seqTypes)
-   print(len(ins))
+   #print("Ins " + seqTypes[n_el-2] + ": "+ str(len(ins)))
    d_ins = setD(seqTypes[n_el-1])
-   print(len(d_ins))
+   #print("D " + seqTypes[n_el-1] + ": " + str(len(d_ins)))
    pr = len(ins)/len(d_ins)
    
    return pr
@@ -166,11 +159,14 @@ def computePR(seqTypes):
 #output valore del participation index
 def computePI(seqTypes):
    m = len(seqTypes)
-   if m == 2:
+   if m <= 2:
       return computePR(seqTypes)
    else:
       pr = computePR([seqTypes[m-2], seqTypes[m-1]])
-      return min(computePI(seqTypes[:m-1]), pr)
+      pi = computePI(seqTypes[:m-1])
+      print(pr)
+      print(pi)
+      return min(pi, pr)
 #end computePI
       
 #MAIN
@@ -189,7 +185,7 @@ mycursor = mydb.cursor()
 #TEST computePI
 seq = ["Commercial Burglary", "Robbery", "Auto Theft"]
 pi = computePI(seq)
-print(pi)
+print("valore pi finale: " + str(pi))
 
 #TEST computePR
 #seq = ["Commercial Burglary", "Auto Theft"]
