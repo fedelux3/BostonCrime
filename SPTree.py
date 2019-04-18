@@ -118,18 +118,34 @@ def main():
    testInsertComplete()
 #end main
 
+#esempio del paper
 def testInsertComplete():
-   t = SPTree(["A", "B", "C"])
+   t = SPTree(["A", "B", "C", "D", "E", "F"])
    #print(t)
    seq1 = ["A", "B"]
-   seq2 = ["A", "C"]
-   seq3 = ["B", "C"]
-   seq4 = ["A", "B", "C"]
+   seq2 = ["B", "C"]
+   seq3 = ["B", "D"]
+   seq4 = ["C", "E"]
+   seq5 = ["C", "F"]
+   seq21 = ["A", "B", "C"]
+   seq22 = ["A", "B", "D"]
+   seq23 = ["B", "C", "E"]
+   seq24 = ["B", "C", "F"]
+   seq31 = ["A", "B", "C", "E"]
+   seq32 = ["A", "B", "C", "F"]
+   
    t.insertNode(seq1)
    t.insertNode(seq2)
    t.insertNode(seq3)
    t.insertNode(seq4)
-   
+   t.insertNode(seq5)
+   t.insertNode(seq21)
+   t.insertNode(seq22)
+   t.insertNode(seq23)
+   t.insertNode(seq24)
+   t.insertNode(seq31)
+   t.insertNode(seq32)
+      
    print(t)
 #end testInsertComplete
 
