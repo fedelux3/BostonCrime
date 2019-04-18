@@ -1,45 +1,159 @@
 
 class Node :
-   def __init__(self, parent1, parent2, seq, level):
+   def __init__(self, parent1, parent2, value, children):
       self.parent1 = parent1
       self.parent2 = parent2
-      self.seq = seq
-      self.level = level
+      self.value = value
+      self.children = []
+   
+   def insertParent1(self, parent1):
+      self.parent1 = parent1
+   
+   def insertParent2(self, parent2):
+      if (self.value == parent2.value):
+         self.parent2 = parent2
+      else:
+         print("Error nel value del parent2")
+   #end insertParent2
+   
+   def insertChild(self, newChild):
+      self.children.append(newChild)
       
    def __str__(self):
-      return '(' + str(self.parent1) + ' , ' + str(self.parent2) + ' , ' + str(self.seq) + ' , ' + str(self.level) + ')'
-
+#      s = '(' + str(self.parent1) + ', ' + str(self.parent2) + ', ' + str(self.value) + ', '
+#      s += "[ "
+#      for el in self.children:
+#         s += el.value + " "
+#      s += "])"
+      #METODO COMPATTO
+      s = "(" + str(self.value)
+      for el in self.children:
+         s+= str(el)
+      s += ")"
+      return s
 #end Nodo
       
 class SPTree :
    
-#   def __init__(self):
-#      self.root = None
-      
+   #assumo che types sia una lista con TUTTI i diversi tipi (NO SEQUENZE)
    def __init__(self, types=None) :
-      self.nodes = []
-      self.root = []
-      self.nEl = 0;
-      i = 0
+      self.root = Node(None, None, None, None);
       for elem in types:
-         n = Node("A","B",elem,i)
-         self.nodes.insert(i, n)
-         self.nEl = self.nEl+1
+         n = Node(self.root,self.root,elem,None)
+         #print(elem)
+         self.root.insertChild(n)
+   
+   def newParent2(self, currNode, newValue):
+      headNode = currNode.parent2
+      par2 = None
+      for child in headNode.children:
+         if child.value == newValue:
+            par2 = child
+            break
+      if par2 is None:
+         print("Error parent2")
+      
+      return par2
+   #end newParent2
+   
+   def insertNode(self, seq):
+      #inserisco l'ultimo elemento della seq scendendo nell'albero rispettandola
+      currNode = self.root
+      currEl = 0
+      childCurr = currNode.children
+      found = 1 #booleano per vedere se ho trovato
+      #passo tutta la sequenza fino all'ultimo elemento
+      for i in range(len(seq)-1):
+         found = 0
+         for child in childCurr:
+            if child.value == seq[i]:
+               currNode = child
+               found = 1
+               break
+         if not found :
+            print("!!!non trovato!!! " + seq[i])
+         childCurr = currNode.children
+         currEl = i
+         if  childCurr is None :
+            print("trovato child none")
+            break
+      if currEl >= len(seq):
+         print("Errore nel indice currEl")
+      #print("sto inserendo: " + seq[currEl+1] + " in: " + str(currNode))
+      p2 = self.newParent2(currNode, seq[currEl+1])
+      n = Node(currNode, p2, seq[currEl+1], None)
+      currNode.insertChild(n) #aggiungo figlio nuovo nodo
+   #end insertNode
+   
+  
+   
+   #cerca una sequenza data in input e la restituisce
+   def searchSeq(self, seq):
+      currNode = self.root
+      string = []
+      for i in range(len(seq)):
+         currEl = seq[i]
+         found = 0
+         for child in currNode.children:
+            if child.value == currEl:
+               currNode = child
+               string.append(child.value)
+               found = 1
+               break
+         if not found :
+            print("sequenza non trovata")
+            return
+      return currNode
+   #end serchSeq
    
    def __str__(self):
-      s = "("
-      for i in range(0,self.nEl):
-         s += str(self.nodes[i]) + " "
-      s += ")"
-      return s;
+      s = str(self.root) + "\n"
+      return s
 #end SPTree
       
 #main
 def main(): 
-   #n = Node('A', 'B', ["Larceny"], 1);
-   #print(str(n))
-   t = SPTree(["Larceny", "Robbery"])
-   print(str(t))
+   
+   #testInsert()
+   testInsertComplete()
+#end main
+
+def testInsertComplete():
+   t = SPTree(["A", "B", "C"])
+   #print(t)
+   seq1 = ["A", "B"]
+   seq2 = ["A", "C"]
+   seq3 = ["B", "C"]
+   seq4 = ["A", "B", "C"]
+   t.insertNode(seq1)
+   t.insertNode(seq2)
+   t.insertNode(seq3)
+   t.insertNode(seq4)
+   
+   print(t)
+#end testInsertComplete
+
+def testInsert():
+   t = SPTree(["Larceny", "Robbery", "Homicide"])
+   print(t)
+   #aggiungo una nuova sequenza
+   seq = ["Larceny", "Homicide"]
+   seq2 = ["Larceny", "Robbery"]
+   seq3 = ["Larceny", "Robbery", "Homicide"]
+   seq4 = ["Homicide", "Robbery"]
+   t.insertNode(seq)
+   f = t.root.children[0]
+   print("f1: " + str(f))
+   t.insertNode(seq2)
+   f = t.root.children[0]
+   print("f2: " + str(f))
+   t.insertNode(seq3)
+   f2 = t.root.children[0].children[1]
+   print("f3: " + str(f2))
+   t.insertNode(seq4)
+   s = t.searchSeq(["Homicide", "Robbery"])
+   print(s)
+#end testInsert
    
 #in questo modo controllo se sto eseguendo direttamente questo script
 if __name__ == "__main__":
