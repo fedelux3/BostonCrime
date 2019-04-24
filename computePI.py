@@ -8,6 +8,7 @@ Created on Tue Mar 19 11:53:20 2019
 import datetime
 import math
 import mysql.connector
+from SPTree import SPTree
 
 #input coordinate stringhe
 #output coordinate intere 
@@ -67,7 +68,7 @@ def neighborhood(event, typeF) :
    #neighbothood with respect to event type
    nfe = set()
    
-   sql = "SELECT * FROM " + table
+   sql = "SELECT * FROM " + "crimedata2018small"
    
    mycursor.execute(sql)
    
@@ -99,7 +100,7 @@ def neighborhood(event, typeF) :
 def setD(typeD) :
    setReturn = set()
    
-   sql = "SELECT * FROM " + table + " WHERE offence_code_group = \"" + typeD + "\""   
+   sql = "SELECT * FROM " + "crimedata2018small" + " WHERE offence_code_group = \"" + typeD + "\""   
    
    mycursor.execute(sql)
    
@@ -124,7 +125,7 @@ def setInstances(seqTypes):
       
       for event in set_prev:
         
-         sql = "SELECT * FROM " + table + " WHERE incident_num = \"" + event + "\""
+         sql = "SELECT * FROM " + "crimedata2018small" + " WHERE incident_num = \"" + event + "\""
          mycursor.execute(sql)
          #la tupla che mi interessa
          ev = mycursor.fetchone()
@@ -164,6 +165,18 @@ def computePI(seqTypes):
       return min(pi, pr)
 #end computePI
 
+###
+#candidate generation
+#input un insieme di sequenze significative
+#assumo che l'input sia di una lista di sequenze (che a loro volta sono liste)
+#output albero con set di candidati 
+def candidateGen(setSeq, tree) :
+   
+   for seq in setSeq :
+      tree.insertNode(seq)
+   #print(tree)
+#end caditateGen
+   
 ###############################################################################
    #TEST
 
@@ -199,7 +212,7 @@ def testSetInstances() :
    ins = setInstances(seq)
    print(ins)
    for i in ins:
-      sql = "SELECT * FROM " + table + " WHERE incident_num = \"" + i + "\""
+      sql = "SELECT * FROM " + "crimedata2018small" + " WHERE incident_num = \"" + i + "\""
       mycursor.execute(sql)
       row = mycursor.fetchone()
       print(row)
@@ -212,7 +225,7 @@ def testSetD() :
 
 #TEST neighborhood
 def testNeighborhood() :
-   sql = "SELECT * FROM " + table + " WHERE incident_num = \"I182076070\""
+   sql = "SELECT * FROM " + "crimedata2018small" + " WHERE incident_num = \"I182076070\""
    mycursor.execute(sql)
    
    for x in mycursor:
@@ -221,6 +234,46 @@ def testNeighborhood() :
    n = neighborhood(ev, "Aggravated Assault")
    print(n)
 
+#test esempio paper
+def testPaper() :
+   types = ["A", "B", "C", "D", "E", "F"]
+   seq2 = [["A", "B"], ["B", "C"], ["B", "D"], ["C", "E"], ["C", "F"]]
+   seq3 = [["A", "B", "C"], ["A", "B", "D"], ["B", "C", "E"], ["B", "C", "F"]]
+   seq4 = [["A", "B", "C", "E"], ["A", "B", "C", "F"]]
+   tree = SPTree(types)
+   candidateGen(seq2, tree)
+   candidateGen(seq3, tree)
+   candidateGen(seq4, tree)
+   
+   print(tree)
+#end testPaper
+
+def testDataset():
+   types = []
+   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
+           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
+           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
+           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"]]
+   
+   sql = "SELECT DISTINCT offence_code_group FROM crimedata2018small"
+   mycursor.execute(sql)
+   
+   for tipo in mycursor:
+      types.append(tipo[0])
+
+   tree = SPTree(types)
+   candidateGen(seq2, tree)
+   print(tree)
+   
+   ins = tree.candidates
+   i = 0
+
+   for seq in ins:
+      i += 1
+      pi = computePI(seq)
+      print(str(i) + ". " + str(seq) + ": " + str(pi))
+   mycursor.close()
+#end testDataset
 #############################
    #MAIN
 if __name__ == "__main__":
@@ -233,20 +286,26 @@ if __name__ == "__main__":
    table = "crimedata2018small"
    mycursor = mydb.cursor()
    
-   print("Testing [testNeighborhood]: ")
-   testNeighborhood()
+#   print("Testing [testNeighborhood]: ")
+#   testNeighborhood()
+#   
+#   print("Testing [testSetD]: ")
+#   testSetD()
+#   
+#   print("Testing [testSetInstances]: ")
+#   testSetInstances()
+#   
+#   print("Testing [testPR]: ")
+#   testPR()
+#   
+#   print("Testing [testPI]: ")
+#   testPI()
    
-   print("Testing [testSetD]: ")
-   testSetD()
+#   print("Testing [testPaper]: ")
+#   testPaper()
    
-   print("Testing [testSetInstances]: ")
-   testSetInstances()
-   
-   print("Testing [testPR]: ")
-   testPR()
-   
-   print("Testing [testPI]: ")
-   testPI()
+   print("Testing [testDataset]: ")
+   testDataset()
    
    mycursor.close()
    

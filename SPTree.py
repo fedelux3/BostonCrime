@@ -38,6 +38,8 @@ class SPTree :
    #assumo che types sia una lista con TUTTI i diversi tipi (NO SEQUENZE)
    def __init__(self, types=None) :
       self.root = Node(None, None, None, None);
+      #mi salvo l'insieme delle sequenze presenti nell'albero
+      self.candidates = [] 
       for elem in types:
          n = Node(self.root,self.root,elem,None)
          #print(elem)
@@ -77,18 +79,20 @@ class SPTree :
          if  childCurr is None :
             print("trovato child none")
             break
+         
       if currEl >= len(seq):
          print("Errore nel indice currEl")
       #print("sto inserendo: " + seq[currEl+1] + " in: " + str(currNode))
       p2 = self.newParent2(currNode, seq[currEl+1])
       n = Node(currNode, p2, seq[currEl+1], None)
       currNode.insertChild(n) #aggiungo figlio nuovo nodo
+      self.candidates.append(seq)
    #end insertNode
    
   
    
    #cerca una sequenza data in input
-   #restituisce il nodo finale
+   #restituisce il true o false se esiste o meno
    def searchSeq(self, seq):
       currNode = self.root
       string = []
@@ -103,12 +107,20 @@ class SPTree :
                break
          if not found :
             print("sequenza non trovata")
-            return
-      return currNode
+            return 0
+      return 1
    #end serchSeq
    
+   #riaggiorna la lista di sequenze utili eliminando quelle non più presenti
+   def refreshCandidates(self):
+      for seq in self.candidates:
+         found = self.searchSeq(seq)
+         if not found:
+            self.candidates.remove(seq)
+   
    def __str__(self):
-      s = str(self.root) + "\n"
+      s = str(self.root) + "\n\n"
+      s += "Sequenze inserite: " + str(self.candidates) + "\n"
       return s
 #end SPTree
       
