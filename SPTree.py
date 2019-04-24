@@ -87,7 +87,8 @@ class SPTree :
    
   
    
-   #cerca una sequenza data in input e la restituisce
+   #cerca una sequenza data in input
+   #restituisce il nodo finale
    def searchSeq(self, seq):
       currNode = self.root
       string = []
@@ -147,6 +148,9 @@ def testInsertComplete():
    t.insertNode(seq32)
       
    print(t)
+   
+   s = t.searchSeq(["A", "B", "C"])
+   print("sequenza ABC: " + str(s))
 #end testInsertComplete
 
 def testInsert():
