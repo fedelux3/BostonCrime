@@ -16,7 +16,14 @@ import computePI as compute
 def candidateGen(setSeq, tree) :
    
    for seq in setSeq :
-      tree.insertNode(seq)
+      #se la sequenza precedente esiste
+      node = tree.searchNode(seq[:len(seq)-1])
+      if node != 0 :
+         #calcolo neighborhood tra node e seq[len(seq)-1]
+         #creo un set che è l'union tra set di node e neighborhood trovato
+         tree.insertNode(seq) #gli aggiungo l'insieme del nodo
+      else:
+         print("error candidate Gen - node non trovato")
    #print(tree)
 #end caditateGen
    

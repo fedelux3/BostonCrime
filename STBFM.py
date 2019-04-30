@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 19 11:53:20 2019
+Created on Thu Apr 25 17:55:14 2019
 
 @author: fede9
 """
@@ -8,7 +8,7 @@ Created on Tue Mar 19 11:53:20 2019
 import datetime
 import math
 import mysql.connector
-from SPTree import SPTree
+from SPTree2 import SPTree
 
 #input coordinate stringhe
 #output coordinate intere 
@@ -47,7 +47,6 @@ def distanceTime(timeE, timeP) :
    daysE = int(timeE[0:2])
    monthsE = int(timeE[3:5])
    yearsE = int(timeE[6:10])
-   
    daysP = int(timeP[0:2])
    monthsP = int(timeP[3:5])
    yearsP = int(timeP[6:10])
@@ -69,16 +68,13 @@ def neighborhood(event, typeF) :
    nfe = set()
    
    sql = "SELECT * FROM " + table
-   
    mycursor.execute(sql)
    
    for crime in mycursor:
       #print(event)
       #print(crime[5])
-      
       [late, longe] = parserLocation(event[4], event[5])
       [latp, longp] = parserLocation(crime[4], crime[5])
-     
       #se di tipo specificato
       if crime[1] == typeF:
          #se è entro il raggio spaziale
@@ -91,80 +87,44 @@ def neighborhood(event, typeF) :
             if diffDays <= t and event != crime:
                nfe.add(crime[0])
    #end for
-      
    return nfe
 #end neighborhood
-
+   
 #input tipo di evento
 #output insieme ti tutti gli eventi di quel tipo
 def setD(typeD) :
    setReturn = set()
-   
-   sql = "SELECT * FROM " + table + " WHERE offence_code_group = \"" + typeD + "\""   
-   
+   #print(typeD)
+   sql = "SELECT * FROM " + table + " WHERE offence_code_group LIKE \"" + typeD + "\""   
+   #print(sql)
    mycursor.execute(sql)
    
    for record in mycursor:
       setReturn.add(record[0])
    return setReturn
 #end setD
-   
-#input sequenza di m tipi di eventi
+
+#input insiemeSet precedente e tipo corrente
 #output insieme di istanze associate
-def setInstances(seqTypes):
+def setInstances(prevSet, currentType):
    set_return = set()
    #insieme del elemento di sequenza precedente
-   set_prev = setD(seqTypes[0])
-   
-   if len(seqTypes) < 2:
-      return set_prev
-   
-   for i in range(1,len(seqTypes)):
-      currentType = seqTypes[i]
-      
-      for event in set_prev:
-        
-         sql = "SELECT * FROM " + table + " WHERE incident_num = \"" + event + "\""
-         mycursor.execute(sql)
-         #la tupla che mi interessa
-         ev = mycursor.fetchone()
-         #print(ev)
-         neig = neighborhood(ev, currentType)
-         #print(neig)
-         set_return = set_return.union(neig)
-         
+   #set_prev = setD(seqTypes[0])
+
+   for event in prevSet:
+      sql = "SELECT * FROM " + table + " WHERE incident_num = \"" + event + "\""
+      mycursor.execute(sql)
+      #la tupla che mi interessa
+      ev = mycursor.fetchone()
+      #print(ev)
+      neig = neighborhood(ev, currentType)
+      #print(neig)
+      set_return = set_return.union(neig)
    return set_return
 #end setInstance
-
-#input sequenza di 2 tipi
-#output valore di partitipation rateo della sequenza
-def computePR(seqTypes):
-   assert(len(seqTypes) == 2) #lunghezza sequenza deve essere di 2
-   ins = setInstances(seqTypes)
-   n_el = len(seqTypes)
-   #print("Ins " + seqTypes[n_el-2] + ": "+ str(len(ins)))
-   d_ins = setD(seqTypes[n_el-1])
-   #print("D " + seqTypes[n_el-1] + ": " + str(len(d_ins)))
-   pr = len(ins)/len(d_ins)
    
-   return pr
-#end computePR
-
-#input sequenza di tipi
-#output valore del participation index
-def computePI(seqTypes):
-   m = len(seqTypes)
-   if m <= 2:
-      return computePR(seqTypes)
-   else:
-      pr = computePR([seqTypes[m-2], seqTypes[m-1]])
-      pi = computePI(seqTypes[:m-1])
-      #print(pr)
-      #print(pi)
-      return min(pi, pr)
-#end computePI
-
-###
+#QUA FORSE SERVE ALTRO
+   
 #candidate generation
 #input un insieme di sequenze significative
 #assumo che l'input sia di una lista di sequenze (che a loro volta sono liste)
@@ -172,83 +132,63 @@ def computePI(seqTypes):
 def candidateGen(setSeq, tree) :
    
    for seq in setSeq :
-      tree.insertNode(seq)
+      #se la sequenza precedente esiste
+      node = tree.searchNode(seq[:len(seq)-1])
+      if node != 0 :
+         #calcolo nuovo setInstances tra node e tipo di seq[len(seq)-1]
+         newSet = setInstances(node.set, seq[len(seq)-1])
+         print(str(seq) + " inserita")
+         #creo un set che è l'union tra set di node e neighborhood trovato
+         tree.insertNode(seq, newSet) #gli aggiungo l'insieme del nodo
+      else:
+         print("error candidate Gen - node non trovato")
    #print(tree)
 #end caditateGen
+
+#calcola il valore di Partitipation rateo di questo nodo
+def computePR(n1, tree):
+   typeD = n1.value
+   nSet = tree.searchNode([typeD])
+   if (nSet is None):
+      print("tipo non trovato")
+      return
    
-###############################################################################
+   #print("esito searchPR: " + str(nSet))
+   ins = len(n1.set)
+   d_set = len(nSet.set)
+   #print(ins)
+   #print(d_set)
+   pr = ins / d_set
+   return pr
+#end computePR
+   
+##############################################################
    #TEST
 
-#TEST mySQL
-def testmySQL() :
-   mydb = mysql.connector.connect(
-         host = "localhost",
-         user = "root",
-         passwd = "fedeServer33",
-         database = "bostoncrime"
-         )
+def testTree() :
+   t = SPTree(["A", "B", "C"])
+   #inserisco i sets
+   sA = set()
+   sA.add("10")
+   sB = set()
+   sB.add('IT01R003')
+   sC = set()
+   sC.add('30')
    
-   mycursor = mydb.cursor()
-   mycursor.close()
-#end testmySQL
-
-#TEST computePI
-def testPI():
-   seq = ["Commercial Burglary", "Robbery", "Auto Theft"]
-   pi = computePI(seq)
-   print("valore pi finale: " + str(pi))
+   nA = t.searchNode(["A"])
+   nB = t.searchNode(["B"])
+   nC = t.searchNode(["C"])  
    
-#end testPI
+   nA.insertSet(sA)
+   nB.insertSet(sB)
+   nC.insertSet(sC)
+   print(nA)
+   print(nB)
+   print(nC)
+#end testTree
 
-#TEST computePR
-def testPR():
-   seq = ["Other Burglary", "Robbery"]
-   pr = computePR(seq)
-   print(pr)
-#TEST setInstances
-def testSetInstances() :
-   seq = ["Commercial Burglary", "Auto Theft"]
-   ins = setInstances(seq)
-   print(ins)
-   for i in ins:
-      sql = "SELECT * FROM " + table + " WHERE incident_num = \"" + i + "\""
-      mycursor.execute(sql)
-      row = mycursor.fetchone()
-      print(row)
-
-#TEST setD
-def testSetD() :
-   typeE = "Aggravated Assault"
-   s = setD(typeE)
-   print(s)
-
-#TEST neighborhood
-def testNeighborhood() :
-   sql = "SELECT * FROM " + table + " WHERE incident_num = \"I182076070\""
-   mycursor.execute(sql)
+def testCrimeTree() :
    
-   for x in mycursor:
-      ev = x
-   
-   n = neighborhood(ev, "Aggravated Assault")
-   print(n)
-
-#test esempio paper
-def testPaper() :
-   types = ["A", "B", "C", "D", "E", "F"]
-   seq2 = [["A", "B"], ["B", "C"], ["B", "D"], ["C", "E"], ["C", "F"]]
-   seq3 = [["A", "B", "C"], ["A", "B", "D"], ["B", "C", "E"], ["B", "C", "F"]]
-   seq4 = [["A", "B", "C", "E"], ["A", "B", "C", "F"]]
-   tree = SPTree(types)
-   candidateGen(seq2, tree)
-   candidateGen(seq3, tree)
-   candidateGen(seq4, tree)
-   
-   print(tree)
-#end testPaper
-
-def testDataset():
-   types = []
    seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
            ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
            ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
@@ -262,27 +202,80 @@ def testDataset():
            ["Aggravated Assault", "Robbery", "Larceny"], 
            ["Larceny From Motor Vehicle", "Commercial Burglary", "Auto Theft"]]
    
-   sql = "SELECT DISTINCT offence_code_group FROM crimedata2018small"
-   
+   sql = "SELECT DISTINCT offence_code_group FROM " + table
    mycursor.execute(sql)
    
+   types = []
+   setTypes = []
+   #inizializzo i tipi di eventi e i setD a loro legati
    for tipo in mycursor:
       types.append(tipo[0])
+   
+   for el in types:
+      s = setD(el)
+      setTypes.append(s)
 
-   tree = SPTree(types)
+   tree = SPTree()
+#   i = 0
+#   for tipo in tree.root.children:
+#      tipo.insertSet(setTypes[i])
+#      i += 1
+   i = 0
+   for el in types:
+      tree.insertNode(el, setTypes[i])
+      i += 1
+      
+#   for elem in types:
+#         n = Node(self.root,self.root,elem,None,None)
+#         #print(elem)
+#         self.root.insertChild(n)
+      
+   #print(tree)
+   
    candidateGen(seq2, tree)
    candidateGen(seq3, tree)
+   
    print(tree)
    
-   ins = tree.candidates
-   i = 0
+   for tipo in tree.root.children:
+      print(tipo.value + ": " + str(len(tipo.set)))
+#end testCrimeTree
+      
+def testPR() :
+   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
+           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
+           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
+           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
+           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
+           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"]]
+   
+   sql = "SELECT DISTINCT offence_code_group FROM " + table
+   mycursor.execute(sql)
+   
+   types = []
+   setTypes = []
+   #inizializzo i tipi di eventi e i setD a loro legati
+   for tipo in mycursor:
+      types.append(tipo[0])
+   
+   for el in types:
+      s = setD(el)
+      setTypes.append(s)
 
-   for seq in ins:
+   tree = SPTree()
+   i = 0
+   for el in types:
+      tree.insertNode(el, setTypes[i])
       i += 1
-      pi = computePI(seq)
-      print(str(i) + ". " + str(seq) + ": " + str(pi))
-   mycursor.close()
-#end testDataset
+   
+   candidateGen(seq2, tree) #inserisco sequenze di 2 elementi
+   
+   for seq in seq2:
+      n = tree.searchNode(seq)
+      pr1 = computePR(n, tree)
+      print("seq: " + str(seq) + " - pr: " + str(pr1))
+   
+#end testPR
 #############################
    #MAIN
 if __name__ == "__main__":
@@ -295,31 +288,12 @@ if __name__ == "__main__":
    table = "crimedata2018small"
    mycursor = mydb.cursor()
    
-#   print("Testing [testNeighborhood]: ")
-#   testNeighborhood()
-#   
-#   print("Testing [testSetD]: ")
-#   testSetD()
-#   
-#   print("Testing [testSetInstances]: ")
-#   testSetInstances()
-#   
-   print("Testing [testPR]: ")
+#   print("Testing testTree :")
+#   testTree()
+   
+#   print("Testing testCrimeTree :")
+#   testCrimeTree()
+   
+   print("Testing testPR :")
    testPR()
-#   
-#   print("Testing [testPI]: ")
-#   testPI()
-   
-#   print("Testing [testPaper]: ")
-#   testPaper()
-   
-#   print("Testing [testDataset]: ")
-#   testDataset()
-#   
    mycursor.close()
-   
-   
-
-   
-   
-   
