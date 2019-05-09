@@ -256,11 +256,13 @@ def testDataset():
            ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
            ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"]]
    
-   seq3 = [["Commercial Burglary", "Homicide", "Auto Theft"], 
-           ["Larceny From Motor Vehicle", "Homicide", "Auto Theft"],
-           ["Aggravated Assault", "Auto Theft", "Residential Burglary"],
-           ["Aggravated Assault", "Robbery", "Larceny"], 
-           ["Larceny From Motor Vehicle", "Commercial Burglary", "Auto Theft"]]
+#   seq3 = [["Commercial Burglary", "Homicide", "Auto Theft"], 
+#           ["Larceny From Motor Vehicle", "Homicide", "Auto Theft"],
+#           ["Aggravated Assault", "Auto Theft", "Residential Burglary"],
+#           ["Aggravated Assault", "Robbery", "Larceny"], 
+#           ["Larceny From Motor Vehicle", "Commercial Burglary", "Auto Theft"]]
+   seq3 = [['Robbery', 'Larceny', 'Residential Burglary'], 
+           ['Larceny From Motor Vehicle', 'Homicide', 'Auto Theft']]
    
    sql = "SELECT DISTINCT offence_code_group FROM crimedata2018small"
    
@@ -304,8 +306,8 @@ if __name__ == "__main__":
 #   print("Testing [testSetInstances]: ")
 #   testSetInstances()
 #   
-   print("Testing [testPR]: ")
-   testPR()
+#   print("Testing [testPR]: ")
+#   testPR()
 #   
 #   print("Testing [testPI]: ")
 #   testPI()
@@ -313,8 +315,8 @@ if __name__ == "__main__":
 #   print("Testing [testPaper]: ")
 #   testPaper()
    
-#   print("Testing [testDataset]: ")
-#   testDataset()
+   print("Testing [testDataset]: ")
+   testDataset()
 #   
    mycursor.close()
    
