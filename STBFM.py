@@ -8,7 +8,7 @@ Created on Thu Apr 25 17:55:14 2019
 import datetime
 import math
 import mysql.connector
-from SPTree2 import SPTree
+from SPTree3 import SPTree
 
 #input coordinate stringhe
 #output coordinate intere 
@@ -126,6 +126,7 @@ def setInstances(prevSet, currentType):
 #assumo che l'input sia di una lista di sequenze (che a loro volta sono liste)
 #output albero con set di candidati 
 def candidateGen(setSeq, tree) :
+   ret = []
    
    for seq in setSeq :
       #se la sequenza precedente esiste
@@ -133,11 +134,14 @@ def candidateGen(setSeq, tree) :
       if node != 0 :
          #calcolo nuovo setInstances tra node e tipo di seq[len(seq)-1]
          newSet = setInstances(node.set, seq[len(seq)-1])
-         print("inserito: " + str(seq))
          #creo un set che è l'union tra set di node e neighborhood trovato
          tree.insertNode(seq, newSet) #gli aggiungo l'insieme del nodo
+         ret.append(seq)
+         print("inserito: " + str(seq))
       else:
          print("error candidate Gen - node non trovato")
+   
+   return ret
 #end caditateGen
 
 #calcola il valore di Partitipation rateo di questo nodo
@@ -182,25 +186,30 @@ def checkDouble(seq):
       return False
 #end checkDouble
 
-def candidateGenTree(length, tree):
-   candidates = tree.candidates
+def candidateGenTree(candidates, tree):
+   ret = []
+   
    for cand in candidates:
-      if len(cand) == length-1:
-         nodeCand = tree.searchNode(cand)
-         if nodeCand is None:
-            print("cand not found, seq: " + str(cand))
-            continue
-         children = nodeCand.parent2.children
-         for child in children:
-            newSeq = cand[:]
-            newSeq.append(child.value)
-            if checkDouble(newSeq):
-   #            print("cand: " + str(cand))
-   #            print("newSeq: " + str(newSeq))
-               #print("cand: " + str(cand) + ", newSeq: " + str(newSeq) + " ...")
-               newSet = setInstances(nodeCand.set, child.value)
-               tree.insertNode(newSeq, newSet)
-               print("inserito: " + str(newSeq))
+      nodeCand = tree.searchNode(cand)
+      if nodeCand is None:
+         #print("cand not found, seq: " + str(cand))
+         continue
+      #questo passaggio serve per generare in automatico le prox seq
+      children = nodeCand.parent2.children
+      #print(nodeCand)
+      for child in children:
+         newSeq = cand[:]
+         newSeq.append(child.value)
+#         print(newSeq)
+         if checkDouble(newSeq):
+#            print("cand: " + str(cand))
+#            print("newSeq: " + str(newSeq))
+#            print("cand: " + str(cand) + ", newSeq: " + str(newSeq) + " ...")
+            newSet = setInstances(nodeCand.set, child.value)
+            tree.insertNode(newSeq, newSet)
+            ret.append(newSeq)
+            print("inserito: " + str(newSeq))
+   return ret
 #end candidateGenTree
 
 #input lista di [sequenza, pi]
@@ -225,197 +234,76 @@ def seqPIMin(seqList, num):
    return teta
 #end seqPIMin
 
-#faccio il refreshTree, in base al teta elimino tutte le sequenze che hanno un teta minore dall'albero
-def refreshTree(tree, teta):
-   cands = tree.candidates
-   for cand in cands:
-      pi = computePI(cand, tree)
-      #questo controllo mi permette di evitare sequenze non più presenti
-      if pi is None:
-         continue
-      if pi < teta:
-         delNode = tree.searchNode(cand)
-         if delNode is None:
-            print(str(cand) + " not found")
-            tree.candidates.remove(cand)
-            continue
-         delNode.parent1.children.remove(delNode)
-         tree.candidates.remove(cand)
-
-#verifyCandidates, si occupa del calcolo del pi di ciascun candidato
-#output lista di coppie sequenza - pi
-def verifyCandidates(lun, teta, tree):
-   cand = tree.candidates
-   ret = []
-   
-   for seq in cand:
-      if len(seq) == lun: 
-         pi = computePI(seq, tree)
-         #questo controllo mi permette di evitare sequenze non più presenti
-         if pi is None:
-            continue
-         
-         if pi >= teta:
-            ret.append([seq, pi])
-         else:
-            #taglio l'albero relativo a questa computazione
-            n = tree.searchNode(seq)
-            if n is None:
-               print("error")
-               return
-            
-            for child in n.parent1.children:
-               if child.value == seq[len(seq)-1]:
-                  n.parent1.children.remove(child)
-                  print("eliminato ramo albero")
-                  tree.candidates.remove(seq)
-                  break
-         
-   return ret
-#end verifyCandidates
-
 #verifyTopCandidates, si occupa del calcolo del pi di ciascun candidato
 #estraendo solo i primi n elementi in base al valore di pi
 #output lista di coppie [sequenza - pi] (n elementi)
-def verifyTopCandidates(lun, teta, top, num, tree):
+def verifyTopCandidates(candidates, teta, top, num, tree):
+   ret = []
    
-   for seq in tree.candidates:
-      if len(seq) == lun: 
-         pi = computePI(seq, tree)
-         #questo controllo mi permette di evitare sequenze non più presenti
-         if pi is None:
-            continue
-         if pi >= teta:
-            #se ho ancora spazio nel top
-            if len(top) < num-1:
-               top.append([seq, pi])
-            #se sono al limite del top
-            elif len(top) == num-1:
-               top.append([seq, pi])
-               teta = seqPIMin(top, num)
-               print("new teta (==): " + str(teta))
-            else:
-               #se ho riempito tutto il top
-               top.append([seq, pi])
-               if pi > teta:
-                  teta = seqPIMin(top, num)
-                  print("new teta (>): " + str(teta))
-                  #cancello tutti i top con pi < teta
-                  for el in top:
-                     if el[1] < teta:
-                        top.remove(el)
-                        #elimino il relativo sotto-albero alle sequenze eliminate
-                        seqdel = el[0]
-                        n = tree.searchNode(seqdel)
-                        if n is None:
-                           print("error top candidates, seq non trovata: " + str(seqdel))
-                           continue
-                        
-                        for child in n.parent1.children:
-                           if child.value == seqdel[len(seqdel)-1]:
-                              n.parent1.children.remove(child)
-                              print("eliminato ramo di: " + str(seqdel) + ", che ha pi = " + str(el[1]))
-                              break
-                  #end for
-                  #cancello tutti le seq lunghe lun dei candidates
-                  for cand in tree.candidates:
-                     if len(cand[0])==lun and cand[1] < teta:
-                        tree.candidates.remove(cand)
-                        #elimino il relativo sotto-albero
-                        seqdel = cand[0]
-                        n = tree.searchNode(seqdel)
-                        if n is None:
-                           print("error cand candidates, seq non trovata: " + str(seqdel))
-                           continue
-                           
-                        for child in n.parent1.children:
-                           if child.value == seqdel[len(seqdel)-1]:
-                              n.parent1.children.remove(child)
-                              print("delete ramo di: " + str(seqdel) + ", che ha pi = " + str(cand[1]))
-                              break
-                  #end for
-               #end if
-         else:
-            #se il pi ha un teta mirore rispetto al limite
-            #taglio l'albero relativo a questa computazione
-            n = tree.searchNode(seq)
-            if n is None:
-               print("error, seq non trovata: " + str(seq))
-               continue
-            
-            for child in n.parent1.children:
-               if child.value == seq[len(seq)-1]:
-                  n.parent1.children.remove(child)                              
-                  tree.candidates.remove(seq)
-                  print("eliminato(2) ramo di: " + str(seq) + ", che ha pi = " + str(pi))
-                  break
-         
-   return top
-#end verifyCandidates
-
-#algroritmo STBF senza il top e l'update della teta
-def stbfMiner():
-   #teta valore di threshold rispetto al pi
-   teta = 0.7
-   #creo l'albero delle sequenze   
-   tree = SPTree()   
-   #prendo ciascun tipo di evento
-   sql = "SELECT DISTINCT offence_code_group FROM " + table
-   mycursor.execute(sql)
-   
-   types = []
-   setTypes = []
-   #inizializzo i tipi di eventi e i setD a loro legati
-   #inserendo il primo layer di albero
-   for tipo in mycursor:
-      types.append(tipo[0])
-   
-   for el in types:
-      s = setD(el)
-      setTypes.append(s)
-
-   i = 0
-   for el in types:
-      tree.insertNode(el, setTypes[i])
-      i += 1
-   #genero i pattern di lunghezza 2
-   #per ora sono handmade
-   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
-           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
-           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
-           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
-           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
-           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"],
-           ["Larceny", "Aggravated Assault"], ["Commercial Burglary", "Other Burglary"]]
-   
-   print("... generating candidates(2)")
-   candidateGen(seq2, tree)
-   #faccio la verifyCandidates(2)
-   print(tree)
-   print("\n... verifying candidates(2)")
-   val = verifyCandidates(2, teta, tree)
-   for el in val:
-      print(str(el[0]) + " - " + str(el[1]))
+   for seq in candidates:
       
-   print("\n... generating candidates(3)")
-   candidateGenTree(3, tree)
-   print("\n... verifying candidates(3)")
-   val = verifyCandidates(3, teta, tree)
-   for el in val:
-      print(str(el[0]) + " - " + str(el[1]))
+      pi = computePI(seq, tree)
+      #questo controllo mi permette di evitare sequenze non più presenti
+      if pi is None:
+         continue
+      if pi >= teta:
+         #se ho ancora spazio nel top
+         if len(top) < num-1:
+            top.append([seq, pi])
+            ret.append(seq)
+         #se sono al limite del top
+         elif len(top) == num-1:
+            top.append([seq, pi])
+            ret.append(seq)
+            teta = seqPIMin(top, num)
+            print("new teta (==): " + str(teta))
+         else:
+            #se ho riempito tutto il top
+            top.append([seq, pi])
+            ret.append(seq)
+            if pi > teta:
+               teta = seqPIMin(top, num)
+               print("new teta (>): " + str(teta))
+               #cancello tutti i top con pi < teta
+               for el in top:
+                  if el[1] < teta:
+                     #elimino il relativo sotto-albero alle sequenze eliminate
+                     tree.deleteNode(el[0])
+                     print("pi: " + str(el[1]))
+                     top.remove(el)
+               #end for
+               #cancello tutti le seq con pi(seq) < teta dei candidates
+               for elem in ret:
+                  piRet = computePI(elem, tree)
+                  if piRet is None:
+                     continue
+                  
+                  if piRet < teta:
+                     #elimino il relativo sotto-albero
+                     tree.deleteNode(elem)
+                     print("pi: " + str(piRet))
+                     ret.remove(elem)
+               #end for
+            #end if
+      else:
+         #se il pi ha un teta mirore rispetto al limite
+         #taglio l'albero relativo a questa computazione
+         tree.deleteNode(seq)
+         print("pi: " + str(pi))
    
-   print("\n" + str(tree))
-#end stbfMiner
+   #return coppia di [lista dei canidati di lunghezza lun, [lista dei top, pi del relaivo]]
+   return [ret, top]
+#end verifyCandidates
    
-################ stbfMiner Top
+################ stbfMiner Top ####################
 #algroritmo STBF con il top e l'update della teta
 def stbfMinerTop():
    #teta valore di threshold rispetto al pi
    #top è l'array in cui salvo i migliori risultati
    #num è il numero di risultati desiderati
-   teta = 0.25
+   teta = 0.25   
    top = []
-   num = 20
+   num = 30
    #creo l'albero delle sequenze   
    tree = SPTree()   
    #prendo ciascun tipo di evento
@@ -451,113 +339,68 @@ def stbfMinerTop():
            ["Larceny", "Auto Theft"]]
    
    print("... generating candidates(2)")
-   candidateGen(seq2, tree)
+   c2 = candidateGen(seq2, tree)
    #faccio la verifyCandidates(2)
-   print(tree)
+   #print(tree)
    print("\n... verifying candidates(2)")
-   top = verifyTopCandidates(2, teta, top, num, tree)
+   [l2, top] = verifyTopCandidates(c2, teta, top, num, tree)
+   
+   print("\n" + str(tree))
+   
+   print("\nL2:")
+   i = 0
+   for el in l2:
+      i += 1
+      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+    
+   print("\nTop(2):")
    i = 0
    for el in top:
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-      
+   
+   print("\n" + str(tree))
+   
    print("\n... generating candidates(3)")
-   candidateGenTree(3, tree)
+   c3 = candidateGenTree(l2, tree)
    print("\n... verifying candidates(3)")
-   top = verifyTopCandidates(3, teta, top, num, tree)
-   if top is None:
-      print("Top none")
+   [l3, top] = verifyTopCandidates(c3, teta, top, num, tree)
+   
+   print("\nL3:")
+   i = 0
+   for el in l3:
+      i += 1
+      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+      
+   print("\nTop(3):")
    i = 0
    for el in top:
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
-#   print("\n\n" + str(tree))
-   tree.refreshCandidates()
-   print("\nDopo il refresh\n" + str(tree))
+   print("\n" + str(tree))
    
-#   print("\n... generating candidates(4)")
-#   candidateGenTree(4, tree)
-#   print("\n... verifying candidates(4)")
-#   top = verifyTopCandidates(4, teta, top, num, tree)
-#   if top is None:
-#      print("Top none")
-#   i = 0
-#   for el in top:
-#      i += 1
-#      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-#   
-##   print("\n\n" + str(tree))
-#   tree.refreshCandidates()
-#   print("\nDopo il refresh\n" + str(tree))
+   print("\n... generating candidates(4)")
+   c4 = candidateGenTree(l3, tree)
+   print("\n... verifying candidates(4)")
+   [l4, top] = verifyTopCandidates(c4, teta, top, num, tree)
+   
+    
+   print("\nL4:")
+   i = 0
+   for el in l4:
+      i += 1
+      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+      
+   print("\nTop(4):")
+   i = 0
+   for el in top:
+      i += 1
+      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
+  
+   print("\n" + str(tree))
 ##############################################################
    #TEST
-
-def testTree() :
-   t = SPTree(["A", "B", "C"])
-   #inserisco i sets
-   sA = set()
-   sA.add("10")
-   sB = set()
-   sB.add('IT01R003')
-   sC = set()
-   sC.add('30')
-   
-   nA = t.searchNode(["A"])
-   nB = t.searchNode(["B"])
-   nC = t.searchNode(["C"])  
-   
-   nA.insertSet(sA)
-   nB.insertSet(sB)
-   nC.insertSet(sC)
-   print(nA)
-   print(nB)
-   print(nC)
-#end testTree
-
-def testCrimeTree() :
-   
-   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
-           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
-           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
-           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
-           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
-           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"]]
-   
-   seq3 = [["Commercial Burglary", "Homicide", "Auto Theft"], 
-           ["Larceny From Motor Vehicle", "Homicide", "Auto Theft"],
-           ["Aggravated Assault", "Auto Theft", "Residential Burglary"],
-           ["Aggravated Assault", "Robbery", "Larceny"], 
-           ["Larceny From Motor Vehicle", "Commercial Burglary", "Auto Theft"]]
-   
-   sql = "SELECT DISTINCT offence_code_group FROM " + table
-   mycursor.execute(sql)
-   
-   types = []
-   setTypes = []
-   #inizializzo i tipi di eventi e i setD a loro legati
-   for tipo in mycursor:
-      types.append(tipo[0])
-   
-   for el in types:
-      s = setD(el)
-      setTypes.append(s)
-
-   tree = SPTree()
-   
-   i = 0
-   for el in types:
-      tree.insertNode(el, setTypes[i])
-      i += 1
-   
-   candidateGen(seq2, tree)
-   candidateGen(seq3, tree)
-   
-   print(tree)
-   
-   for tipo in tree.root.children:
-      print(tipo.value + ": " + str(len(tipo.set)))
-#end testCrimeTree
       
 def testPR() :
    seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
@@ -651,22 +494,13 @@ if __name__ == "__main__":
          )
    table = "crimedata2018small"
    mycursor = mydb.cursor()
-   
-#   print("Testing testTree :")
-#   testTree()
-   
-#   print("Testing testCrimeTree :")
-#   testCrimeTree()
-   
+
 #   print("Testing testPR :")
 #   testPR()
    
 #   print("Testing testPI :")
 #   testPI()
-   
-#   print("Testing STBF Miner")
-#   stbfMiner()
-   
+
    print("Testing STBF Miner Top")
    stbfMinerTop()
    

@@ -24,7 +24,7 @@ class Node :
       self.children.append(newChild)
       
    def __str__(self):
-#      s = '(' + str(self.parent1) + ', ' + str(self.parent2) + ', ' + str(self.value) + ', ' + str(self.set) + ', '
+#      s = '(' + str(self.parent1) + ', ' + str(self.parent2) + ', ' + str(self.value) + ', '
 #      s += "[ "
 #      for el in self.children:
 #         s += el.value + " "
@@ -42,8 +42,6 @@ class SPTree :
    #genero la root dell'albero e il suo attributo di candidates validi
    def __init__(self) :
       self.root = Node(None, None, None, None, None);
-      #mi salvo l'insieme delle sequenze presenti nell'albero
-      self.candidates = []
    
    def newParent2(self, currNode, newValue):
       headNode = currNode.parent2
@@ -64,39 +62,36 @@ class SPTree :
    def insertNode(self, seq, setNode):
       #inserisco l'ultimo elemento della seq scendendo nell'albero rispettandola
       currNode = self.root
-      currEl = 0
-      childCurr = currNode.children
       #se sto inserendo nella root
       if isinstance(seq, str) :
          n = Node(self.root,self.root,seq,setNode,None)
          currNode.insertChild(n)
          return
-      
-      found = 1 #booleano per vedere se ho trovato
-      #passo tutta la sequenza fino all'ultimo elemento
-      for i in range(len(seq)-1):
-         found = 0
-         for child in childCurr:
-            if child.value == seq[i]:
-               currNode = child
-               found = 1
-               break
-         if not found :
-            print("!!!non trovato!!! " + seq[i])
-         childCurr = currNode.children
-         currEl = i
-         if  childCurr is None :
-            print("trovato child none")
-            break
-         
-      if currEl >= len(seq):
-         print("Errore nel indice currEl")
-      #print("sto inserendo: " + seq[currEl+1] + " in: " + str(currNode))
-      p2 = self.newParent2(currNode, seq[currEl+1])
-      n = Node(currNode, p2, seq[currEl+1], setNode, None)
+
+      currNode = self.searchNode(seq[:len(seq)-1])
+      if currNode is None:
+         print("error sequenza non inseribile" + str(seq))
+         return
+      p2 = self.newParent2(currNode, seq[len(seq)-1])
+      n = Node(currNode, p2, seq[len(seq)-1], setNode, None)
       currNode.insertChild(n) #aggiungo figlio nuovo nodo
-      self.candidates.append(seq)
    #end insertNode
+   
+   #deleteNode
+   #elimina (taglia) il nodo finale della sequenza data in input
+   def deleteNode(self, seq):
+      n = self.searchNode(seq)
+      if n is None:
+         print("error delete node")
+         return
+      tipo = seq[len(seq)-1]
+      for child in n.parent1.children:
+         if child.value == tipo:
+            n.parent1.children.remove(child)
+            print("eliminato ramo di: " + str(seq))
+            return
+      print("non eliminato: " + str(seq))
+   #end deleteNode
    
    #cerca una sequenza data in input
    #restituisce il true o false se esiste o meno
@@ -137,24 +132,14 @@ class SPTree :
                break
          if not found :
             print("sequenza non trovata " + str(seq))
-            #print(self.root)
             return None
       return currNode
    #end serchNode
-   
-   #riaggiorna la lista di sequenze utili eliminando quelle non più presenti
-   def refreshCandidates(self):
-      for seq in self.candidates:
-         found = self.searchSeq(seq)
-         
-         if not found:
-            self.candidates.remove(seq)
-            print("rimossa: " + str(seq))
-      
+
       
    def __str__(self):
-      s = str(self.root) + "\n\n"
-      s += "Sequenze inserite: " + str(self.candidates) + "\n"
+      s = str(self.root) + "\n"
+      #s += "Sequenze inserite: " + str(self.candidates) + "\n"
       return s
 #end SPTree
       
