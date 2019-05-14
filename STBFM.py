@@ -61,7 +61,7 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 0.1
+   r = 0.01
    #raggio temporale
    t = 2
    #neighbothood with respect to event type
@@ -301,9 +301,9 @@ def stbfMinerTop():
    #teta valore di threshold rispetto al pi
    #top è l'array in cui salvo i migliori risultati
    #num è il numero di risultati desiderati
-   teta = 0.25   
+   teta = 0.25 
    top = []
-   num = 30
+   num = 20
    #creo l'albero delle sequenze   
    tree = SPTree()   
    #prendo ciascun tipo di evento
@@ -338,6 +338,11 @@ def stbfMinerTop():
            ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
            ["Larceny", "Auto Theft"]]
    
+      
+   print("Livello 1:")
+   for t in tree.root.children:
+      print(str(t.value) + " - " + str(len(t.set)))
+      
    print("... generating candidates(2)")
    c2 = candidateGen(seq2, tree)
    #faccio la verifyCandidates(2)
@@ -399,6 +404,7 @@ def stbfMinerTop():
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
   
    print("\n" + str(tree))
+
 ##############################################################
    #TEST
       
