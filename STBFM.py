@@ -61,7 +61,7 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 0.01
+   r = 0.1
    #raggio temporale
    t = 2
    #neighbothood with respect to event type
@@ -303,7 +303,7 @@ def stbfMinerTop():
    #num è il numero di risultati desiderati
    teta = 0.25 
    top = []
-   num = 20
+   num = 50
    #creo l'albero delle sequenze   
    tree = SPTree()   
    #prendo ciascun tipo di evento
@@ -326,7 +326,7 @@ def stbfMinerTop():
       tree.insertNode(el, setTypes[i])
       i += 1
    #genero i pattern di lunghezza 2
-   #per ora sono handmade
+   #per ora sono handmade (19 sequenze)
    seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
            ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
            ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
@@ -398,6 +398,60 @@ def stbfMinerTop():
       print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(4):")
+   i = 0
+   for el in top:
+      i += 1
+      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
+  
+   print("\n... generating candidates(5)")
+   c5 = candidateGenTree(l4, tree)
+   print("\n... verifying candidates(5)")
+   [l5, top] = verifyTopCandidates(c5, teta, top, num, tree)
+   
+    
+   print("\nL5:")
+   i = 0
+   for el in l5:
+      i += 1
+      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+      
+   print("\nTop(5):")
+   i = 0
+   for el in top:
+      i += 1
+      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
+   
+   print("\n... generating candidates(6)")
+   c6 = candidateGenTree(l5, tree)
+   print("\n... verifying candidates(6)")
+   [l6, top] = verifyTopCandidates(c6, teta, top, num, tree)
+   
+    
+   print("\nL6:")
+   i = 0
+   for el in l6:
+      i += 1
+      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+      
+   print("\nTop(6):")
+   i = 0
+   for el in top:
+      i += 1
+      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
+  
+   print("\n... generating candidates(7)")
+   c7 = candidateGenTree(l6, tree)
+   print("\n... verifying candidates(7)")
+   [l7, top] = verifyTopCandidates(c7, teta, top, num, tree)
+   
+    
+   print("\nL7:")
+   i = 0
+   for el in l7:
+      i += 1
+      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+      
+   print("\nTop(7):")
    i = 0
    for el in top:
       i += 1
@@ -494,8 +548,8 @@ def testPI() :
 if __name__ == "__main__":
    mydb = mysql.connector.connect(
          host = "localhost",
-         user = "root",
-         passwd = "fedeServer33",
+         user = "mysql.user",
+         passwd = "aaaa",
          database = "bostoncrime"
          )
    table = "crimedata2018small"
