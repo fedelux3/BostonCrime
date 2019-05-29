@@ -5,6 +5,7 @@ Created on Thu Apr 25 17:55:14 2019
 @author: fede9
 """
 
+import time
 import datetime
 import math
 import mysql.connector
@@ -301,6 +302,9 @@ def stbfMinerTop():
    #teta valore di threshold rispetto al pi
    #top è l'array in cui salvo i migliori risultati
    #num è il numero di risultati desiderati
+   t_start = time.time()
+   elapsed_t = t_start
+   
    teta = 0.25 
    top = []
    num = 50
@@ -342,15 +346,15 @@ def stbfMinerTop():
    print("Livello 1:")
    for t in tree.root.children:
       print(str(t.value) + " - " + str(len(t.set)))
-      
+   
+   
+   
    print("... generating candidates(2)")
    c2 = candidateGen(seq2, tree)
    #faccio la verifyCandidates(2)
    #print(tree)
    print("\n... verifying candidates(2)")
    [l2, top] = verifyTopCandidates(c2, teta, top, num, tree)
-   
-   print("\n" + str(tree))
    
    print("\nL2:")
    i = 0
@@ -365,6 +369,11 @@ def stbfMinerTop():
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
    print("\n" + str(tree))
+   
+   
+   elapsed_t = round(time.time() - t_start)
+   elapsed_min = round(elapsed_t/60, 3)
+   print(time.ctime() + " : " + str(elapsed_t) + " sec - " + str(elapsed_min) + " min")
    
    print("\n... generating candidates(3)")
    c3 = candidateGenTree(l2, tree)
@@ -385,6 +394,12 @@ def stbfMinerTop():
    
    print("\n" + str(tree))
    
+   elapsed_t = time.time() - t_start
+   elapsed_new_min = round(elapsed_t/60, 3)
+   elapsed_lv = elapsed_new_min - elapsed_min
+   elapsed_min = elapsed_new_min
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
+   
    print("\n... generating candidates(4)")
    c4 = candidateGenTree(l3, tree)
    print("\n... verifying candidates(4)")
@@ -403,12 +418,17 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
   
+   elapsed_t = time.time() - t_start
+   elapsed_new_min = round(elapsed_t/60, 3)
+   elapsed_lv = elapsed_new_min - elapsed_min
+   elapsed_min = elapsed_new_min
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
+   
    print("\n... generating candidates(5)")
    c5 = candidateGenTree(l4, tree)
    print("\n... verifying candidates(5)")
    [l5, top] = verifyTopCandidates(c5, teta, top, num, tree)
    
-    
    print("\nL5:")
    i = 0
    for el in l5:
@@ -421,11 +441,16 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
+   elapsed_t = time.time() - t_start
+   elapsed_new_min = round(elapsed_t/60, 3)
+   elapsed_lv = elapsed_new_min - elapsed_min
+   elapsed_min = elapsed_new_min
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
+   
    print("\n... generating candidates(6)")
    c6 = candidateGenTree(l5, tree)
    print("\n... verifying candidates(6)")
    [l6, top] = verifyTopCandidates(c6, teta, top, num, tree)
-   
     
    print("\nL6:")
    i = 0
@@ -438,13 +463,18 @@ def stbfMinerTop():
    for el in top:
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
+   
+   elapsed_t = time.time() - t_start
+   elapsed_new_min = round(elapsed_t/60, 3)
+   elapsed_lv = elapsed_new_min - elapsed_min
+   elapsed_min = elapsed_new_min
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
   
    print("\n... generating candidates(7)")
    c7 = candidateGenTree(l6, tree)
    print("\n... verifying candidates(7)")
    [l7, top] = verifyTopCandidates(c7, teta, top, num, tree)
    
-    
    print("\nL7:")
    i = 0
    for el in l7:
@@ -458,7 +488,13 @@ def stbfMinerTop():
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
   
    print("\n" + str(tree))
-
+   
+   elapsed_t = time.time() - t_start
+   elapsed_new_min = round(elapsed_t/60, 3)
+   elapsed_lv = elapsed_new_min - elapsed_min
+   elapsed_min = elapsed_new_min
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
+   
 ##############################################################
    #TEST
       
