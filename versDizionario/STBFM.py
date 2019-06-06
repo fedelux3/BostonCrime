@@ -68,8 +68,6 @@ def neighborhood(event, typeF) :
    #neighbothood with respect to event type
    nfe = dict()
    
-#   sql = "SELECT * FROM " + table
-#   mycursor.execute(sql)
    #cerco il dizionario che rispetta il typeF
    nType = tree.searchNode([typeF])
    dataType = nType.set
@@ -504,7 +502,7 @@ if __name__ == "__main__":
       
       recordData = [(col[0], col[1], col[2], col[4], col[5]) for col in readData]
       
-      for record in recordData:
+      for record in recordData[1:]:
          data[record[0]] = [record[1], record[2], record[3], record[4]]
          
    #print(data)
