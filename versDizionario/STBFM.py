@@ -26,17 +26,21 @@ def parserLocation(lat, long):
    
 def distanceLocation(lat1, long1, lat2, long2) :
    #conversione in radianti
-   lat1 = round(lat1*(2*math.pi)/360, 2)
-   long1 = round(long1*(2*math.pi)/360, 2)
-   lat2 = round(lat2*(2*math.pi)/360, 2)
-   long2 = round(long2*(2*math.pi)/360, 2)
+#   print("Part: " + str(lat1) + ", " + str(long1))
+#   print("Arr: " + str(lat2) + ", " + str(long2))
+   
+   lat1 = round(lat1*(2*math.pi)/360, 7)
+   long1 = round(long1*(2*math.pi)/360, 7)
+   lat2 = round(lat2*(2*math.pi)/360, 7)
+   long2 = round(long2*(2*math.pi)/360, 7)
    
    
    dist = math.acos( math.sin(lat1) * math.sin(lat2) 
       + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)) * 6371
    
    assert(dist >= 0)
-   return dist
+#   print(dist)
+   return round(dist,3)
 #end distanceLocation
    
 #input data e ora stringa
@@ -62,9 +66,9 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 0.1
+   r = 3
    #raggio temporale
-   t = 2
+   t = 3
    #neighbothood with respect to event type
    nfe = dict()
    
@@ -314,7 +318,7 @@ def stbfMinerTop():
    
    teta = 0.25 
    top = []
-   num = 50
+   num = 10
    #creo l'albero delle sequenze   
    #tree = SPTree()   
    
@@ -511,4 +515,11 @@ if __name__ == "__main__":
    
    print("Testing STBF Miner Top")
    stbfMinerTop()
-   
+
+#   print("Test distance location")
+#   latIn = 42.35115433
+#   longIn = -71.06547895
+#   latOut = 42.30060526 
+#   longOut = -71.05923027
+#   dist = distanceLocation(latIn,longIn,latOut,longOut)
+#   print(dist)
