@@ -6,7 +6,8 @@ Created on Thu Apr 25 17:55:14 2019
 """
 
 import time
-import datetime
+import random
+from datetime import datetime 
 import math
 import csv
 from SPTreeD import SPTree
@@ -23,7 +24,10 @@ def parserLocation(lat, long):
    #print(str)
    return [int(strlat)/100000000, int(strlong)/100000000]
 #end parserLocation
-   
+
+#calcola la distanza in km tra le 2 coordinate x - y
+#x: (lat1,long1), y: (lat2, long2)
+#output distanza in km (3 cifre decimali)
 def distanceLocation(lat1, long1, lat2, long2) :
    #conversione in radianti
 #   print("Part: " + str(lat1) + ", " + str(long1))
@@ -34,17 +38,21 @@ def distanceLocation(lat1, long1, lat2, long2) :
    lat2 = round(lat2*(2*math.pi)/360, 7)
    long2 = round(long2*(2*math.pi)/360, 7)
    
-   
-   dist = math.acos( math.sin(lat1) * math.sin(lat2) 
-      + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)) * 6371
+   a =  math.sin(lat1) * math.sin(lat2) + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)
+   if (a > 1):
+      a = 1
+   if (a < -1):
+      print(a)
+   dist = math.acos(a) * 6371
    
    assert(dist >= 0)
 #   print(dist)
    return round(dist,3)
 #end distanceLocation
-   
-#input data e ora stringa
-#output giorni (intero)
+
+#Calcola la differenza tra 2 date in formato "dd/MM/yyyy  hh:mm:ss"
+#input data e ora in stringa di E e dell'evento di confronto
+#output ore (intero)
 def distanceTime(timeE, timeP) :
    assert(len(timeE) == 16)
    assert(len(timeP) == 16)
@@ -52,23 +60,27 @@ def distanceTime(timeE, timeP) :
    daysE = int(timeE[0:2])
    monthsE = int(timeE[3:5])
    yearsE = int(timeE[6:10])
+   hoursE = int(timeE[11:13])
+   
    daysP = int(timeP[0:2])
    monthsP = int(timeP[3:5])
    yearsP = int(timeP[6:10])
+   hoursP = int(timeP[11:13])
    
-   dE = datetime.date(yearsE, monthsE, daysE)
-   dP = datetime.date(yearsP, monthsP, daysP)
+   dE = datetime(yearsE, monthsE, daysE, hoursE)
+   dP = datetime(yearsP, monthsP, daysP, hoursP)
    
-   return abs((dE - dP).days)
+   #output in ore
+   return round((dE - dP).total_seconds()/3600)
 #end distanceTime
    
 #input event (tupla dell'evento), type event
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 3
-   #raggio temporale
-   t = 3
+   r = 0.5
+   #raggio temporale (ore)
+   t = 168 #7 giorni
    #neighbothood with respect to event type
    nfe = dict()
    
@@ -91,7 +103,7 @@ def neighborhood(event, typeF) :
          diffDays = distanceTime(timee, timep)
          #se è entro il raggio temporale
          #escludo se stesso
-         if diffDays <= t and event[0] != rec[0]:
+         if diffDays > 0 and diffDays <= t and event[0] != rec[0]:
             nfe[rec[0]] = rec[1]
    #end for
    return nfe
@@ -197,7 +209,28 @@ def checkDouble(seq):
    else:
       return False
 #end checkDouble
-
+      
+#crea un numero n di sequenze di lunghezza 2 casuali
+#input n= num di elementi; types= elenco di tipi
+#output lista di sequenze di 2 elementi
+def candidateGenRandom2(types, n):
+   l = []
+   
+   for i in range(n):
+      #genero una nuova sequenza utilizzabile
+      while True:
+         el1 = random.choice(types)
+         el2 = random.choice(types)
+         s = [el1, el2]
+         if checkDouble(s):
+            if (s not in l):
+               l.append(s)
+               break;
+#            else:
+#               print("double: " + str(s))
+   return l
+#end candidateGenRandom2
+   
 def candidateGenTree(candidates, tree):
    ret = []
    
@@ -258,6 +291,7 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
       #questo controllo mi permette di evitare sequenze non più presenti
       if pi is None:
          continue
+      pi = round(pi,2)
       if pi >= teta:
          #se ho ancora spazio nel top
          if len(top) < num-1:
@@ -318,7 +352,7 @@ def stbfMinerTop():
    
    teta = 0.25 
    top = []
-   num = 10
+   num = 50
    #creo l'albero delle sequenze   
    #tree = SPTree()   
    
@@ -334,16 +368,18 @@ def stbfMinerTop():
 
    #genero i pattern di lunghezza 2
    #per ora sono handmade (19 sequenze)
-   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
-           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
-           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
-           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
-           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
-           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"],
-           ["Larceny", "Aggravated Assault"], ["Commercial Burglary", "Other Burglary"],
-           ["Residential Burglary", "Auto Theft"],["Homicide", "Other Burglary"],
-           ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
-           ["Larceny", "Auto Theft"]]
+#   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
+#           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
+#           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
+#           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
+#           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
+#           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"],
+#           ["Larceny", "Aggravated Assault"], ["Commercial Burglary", "Other Burglary"],
+#           ["Residential Burglary", "Auto Theft"],["Homicide", "Other Burglary"],
+#           ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
+#           ["Larceny", "Auto Theft"]]
+   
+   seq2 = candidateGenRandom2(types, 72)
    
    print("Livello 1:")
    for t in tree.root.children:
@@ -519,7 +555,20 @@ if __name__ == "__main__":
 #   print("Test distance location")
 #   latIn = 42.35115433
 #   longIn = -71.06547895
-#   latOut = 42.30060526 
+#   latOut = 42.35060526 
 #   longOut = -71.05923027
 #   dist = distanceLocation(latIn,longIn,latOut,longOut)
 #   print(dist)
+   
+#   print("Testing distance time")
+#   dE = datetime(2017, 4, 16, 4)
+#   dP = datetime(2017, 4, 15, 3)
+#   print((dE - dP).total_seconds())
+   
+#   print("Testing random gen candidate")
+#   types = ["Aggravated Assault", "Auto Theft", "Commercial Burglary", "Homicide",
+#            "Other Burglary", "Robbery", "Larceny", "Residential Burglary", 
+#            "Larceny From Motor Vehicle"]
+#   l = candidateGenRandom2(types, 72)
+#   for e in l:
+#      print(e)
