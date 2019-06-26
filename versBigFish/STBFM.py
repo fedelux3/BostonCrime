@@ -78,9 +78,9 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 0.5
+   r = 3.5
    #raggio temporale (ore)
-   t = 168 #7 giorni
+   t = 120 #5 giorni
    #neighbothood with respect to event type
    nfe = dict()
    
@@ -209,10 +209,10 @@ def checkDouble(seq):
    else:
       return False
 #end checkDouble
-      
-#serve per ordinare gli elementi del top
+
+#seleziona l'elemento di ordinamento per la top
 def elSort(val):
-   return val[1]
+   return val[1]   
 #end
    
 #crea un numero n di sequenze di lunghezza 2 casuali
@@ -230,7 +230,7 @@ def candidateGenRandom2(types, n):
          if checkDouble(s):
             if (s not in l):
                l.append(s)
-               break;
+               break
 #            else:
 #               print("double: " + str(s))
    return l
@@ -293,7 +293,7 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
    for seq in candidates:
       
       pi = computePI(seq, tree)
-      #questo controllo mi permette di evitare sequenze non più presenti
+      #questo controllo mi permette di evitare sequenze non più presenti      
       if pi is None:
          continue
       pi = round(pi,2)
@@ -320,7 +320,7 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
                   if el[1] < teta:
                      #elimino il relativo sotto-albero alle sequenze eliminate
                      tree.deleteNode(el[0])
-                     print("pi: " + str(el[1]))
+                     print("deleted pi: " + str(el[1]))
                      top.remove(el)
                #end for
                #cancello tutti le seq con pi(seq) < teta dei candidates
@@ -332,7 +332,7 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
                   if piRet < teta:
                      #elimino il relativo sotto-albero
                      tree.deleteNode(elem)
-                     print("pi: " + str(piRet))
+                     print("deleted pi: " + str(piRet))
                      ret.remove(elem)
                #end for
             #end if
@@ -340,13 +340,11 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
          #se il pi ha un teta mirore rispetto al limite
          #taglio l'albero relativo a questa computazione
          tree.deleteNode(seq)
-         print("pi: " + str(pi))
-   
+         print("deleted pi: " + str(pi))
    #ordino la lista dei top
    top.sort(key = elSort, reverse = True)
-   
    #return coppia di [lista dei canidati di lunghezza lun, [lista dei top, pi del relaivo]]
-   return [ret, top]
+   return [ret, top, teta]
 #end verifyCandidates
    
 ################ stbfMiner Top ####################
@@ -357,8 +355,9 @@ def stbfMinerTop():
    #num è il numero di risultati desiderati
    t_start = time.time()
    elapsed_t = t_start
-   
-   teta = 0.25 
+   #lista per scrivere i tempi nel csv
+   ts = []
+   teta = 0.25
    top = []
    num = 50
    #creo l'albero delle sequenze   
@@ -386,8 +385,8 @@ def stbfMinerTop():
 #           ["Residential Burglary", "Auto Theft"],["Homicide", "Other Burglary"],
 #           ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
 #           ["Larceny", "Auto Theft"]]
-   
-   seq2 = candidateGenRandom2(types, 72)
+   numSeq2 = 72
+   seq2 = candidateGenRandom2(types, numSeq2)
    
    print("Livello 1:")
    for t in tree.root.children:
@@ -399,13 +398,13 @@ def stbfMinerTop():
    #faccio la verifyCandidates(2)
    #print(tree)
    print("\n... verifying candidates(2)")
-   [l2, top] = verifyTopCandidates(c2, teta, top, num, tree)
+   [l2, top, teta] = verifyTopCandidates(c2, teta, top, num, tree)
    
-   print("\nL2:")
-   i = 0
-   for el in l2:
-      i += 1
-      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+   # print("\nL2:")
+   # i = 0
+   # for el in l2:
+   #    i += 1
+   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
     
    print("\nTop(2):")
    i = 0
@@ -413,23 +412,23 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
-   print("\n" + str(tree))
-   
+   # print("\n" + str(tree))
    
    elapsed_t = round(time.time() - t_start)
-   elapsed_min = round(elapsed_t/60, 3)
-   print(time.ctime() + " : " + str(elapsed_t) + " sec - " + str(elapsed_min) + " min")
+   elapsed_old = elapsed_t 
+   print(time.ctime() + " : " + str(elapsed_t) + " sec")
+   ts.append(elapsed_t)
    
    print("\n... generating candidates(3)")
    c3 = candidateGenTree(l2, tree)
    print("\n... verifying candidates(3)")
-   [l3, top] = verifyTopCandidates(c3, teta, top, num, tree)
+   [l3, top, teta] = verifyTopCandidates(c3, teta, top, num, tree)
    
-   print("\nL3:")
-   i = 0
-   for el in l3:
-      i += 1
-      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+   # print("\nL3:")
+   # i = 0
+   # for el in l3:
+   #    i += 1
+   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(3):")
    i = 0
@@ -437,25 +436,24 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
-   print("\n" + str(tree))
+   # print("\n" + str(tree))
    
-   elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
-   elapsed_lv = elapsed_new_min - elapsed_min
-   elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
-   
+   elapsed_t = round(time.time() - t_start)
+   elapsed_lv = elapsed_t - elapsed_old
+   elapsed_old = elapsed_t
+   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
+   ts.append(elapsed_lv)
+
    print("\n... generating candidates(4)")
    c4 = candidateGenTree(l3, tree)
    print("\n... verifying candidates(4)")
-   [l4, top] = verifyTopCandidates(c4, teta, top, num, tree)
-   
+   [l4, top, teta] = verifyTopCandidates(c4, teta, top, num, tree)
     
-   print("\nL4:")
-   i = 0
-   for el in l4:
-      i += 1
-      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+   # print("\nL4:")
+   # i = 0
+   # for el in l4:
+   #    i += 1
+   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(4):")
    i = 0
@@ -463,22 +461,22 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
   
-   elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
-   elapsed_lv = elapsed_new_min - elapsed_min
-   elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
-   
+   elapsed_t = round(time.time() - t_start)
+   elapsed_lv = elapsed_t - elapsed_old
+   elapsed_old = elapsed_t
+   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
+   ts.append(elapsed_lv)
+
    print("\n... generating candidates(5)")
    c5 = candidateGenTree(l4, tree)
    print("\n... verifying candidates(5)")
-   [l5, top] = verifyTopCandidates(c5, teta, top, num, tree)
+   [l5, top, teta] = verifyTopCandidates(c5, teta, top, num, tree)
    
-   print("\nL5:")
-   i = 0
-   for el in l5:
-      i += 1
-      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+   # print("\nL5:")
+   # i = 0
+   # for el in l5:
+   #    i += 1
+   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(5):")
    i = 0
@@ -486,22 +484,22 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
-   elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
-   elapsed_lv = elapsed_new_min - elapsed_min
-   elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
-   
+   elapsed_t = round(time.time() - t_start)
+   elapsed_lv = elapsed_t - elapsed_old
+   elapsed_old = elapsed_t
+   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
+   ts.append(elapsed_lv)
+
    print("\n... generating candidates(6)")
    c6 = candidateGenTree(l5, tree)
    print("\n... verifying candidates(6)")
-   [l6, top] = verifyTopCandidates(c6, teta, top, num, tree)
+   [l6, top, teta] = verifyTopCandidates(c6, teta, top, num, tree)
     
-   print("\nL6:")
-   i = 0
-   for el in l6:
-      i += 1
-      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+   # print("\nL6:")
+   # i = 0
+   # for el in l6:
+   #    i += 1
+   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(6):")
    i = 0
@@ -509,22 +507,22 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
-   elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
-   elapsed_lv = elapsed_new_min - elapsed_min
-   elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
-  
+   elapsed_t = round(time.time() - t_start)
+   elapsed_lv = elapsed_t - elapsed_old
+   elapsed_old = elapsed_t
+   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
+   ts.append(elapsed_lv)
+   
    print("\n... generating candidates(7)")
    c7 = candidateGenTree(l6, tree)
    print("\n... verifying candidates(7)")
-   [l7, top] = verifyTopCandidates(c7, teta, top, num, tree)
+   [l7, top, teta] = verifyTopCandidates(c7, teta, top, num, tree)
    
-   print("\nL7:")
-   i = 0
-   for el in l7:
-      i += 1
-      print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
+   # print("\nL7:")
+   # i = 0
+   # for el in l7:
+   #    i += 1
+   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(7):")
    i = 0
@@ -532,39 +530,47 @@ def stbfMinerTop():
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
   
-   print("\n" + str(tree))
+   # print("\n" + str(tree))
+   print("\nteta finale: " + str(teta))
    
-   elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
-   elapsed_lv = elapsed_new_min - elapsed_min
-   elapsed_min = elapsed_new_min
-   print("-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
+   elapsed_t = round(time.time() - t_start)
+   elapsed_lv = elapsed_t - elapsed_old
+   elapsed_old = elapsed_t
+   ts.append(elapsed_lv)
+   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --\n")
    
+   writer.writerow((file, 3.5, 120, num, teta, ts[0], ts[1], ts[2], ts[3], ts[4], ts[5], elapsed_t, numSeq2))
 #############################
    #MAIN
 if __name__ == "__main__":
-   data = {}
-   with open("dataset2018_2_One.csv", newline="", encoding="ISO-8859-1") as filecsv:
-      
-      readData = csv.reader(filecsv, dialect = 'excel', delimiter = ";")
-      
-      recordData = [(col[0], col[1], col[2], col[4], col[5]) for col in readData]
-      
-      for record in recordData[1:]:
-         data[record[0]] = [record[1], record[2], record[3], record[4]]
-         
-   #print(data)
-   #inizializzo l'albero
-   tree = SPTree()
+
+   filesName = ["dataset2018_2_One.csv", "dataset2018_One_4000.csv", "dataset2018_One_full.csv"]
+   wr = open("results2.csv", "a")
+   writer = csv.writer(wr, dialect = 'excel', quoting= csv.QUOTE_MINIMAL)
    
-   print("Testing STBF Miner Top")
-   stbfMinerTop()
+   for file in filesName:
+      data = {}
+      with open(file) as filecsv:
+         
+         readData = csv.reader(filecsv, dialect = 'excel', delimiter = ";")
+         
+         recordData = [(col[0], col[1], col[2], col[4], col[5]) for col in readData]
+         
+         for record in recordData[1:]:
+            data[record[0]] = [record[1], record[2], record[3], record[4]]
+         
+      #print(data)
+      #inizializzo l'albero
+      tree = SPTree()
+      
+      print("Testing STBF Miner Top")
+      stbfMinerTop()
 
 #   print("Test distance location")
-#   latIn = 42.350791
-#   longIn = -71.062127
-#   latOut = 42.349570 
-#   longOut = -71.057149
+#   latIn = 42.35115433
+#   longIn = -71.06547895
+#   latOut = 42.35060526 
+#   longOut = -71.05923027
 #   dist = distanceLocation(latIn,longIn,latOut,longOut)
 #   print(dist)
    
