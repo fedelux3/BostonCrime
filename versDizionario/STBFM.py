@@ -78,7 +78,7 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 0.5
+   r = 3
    #raggio temporale (ore)
    t = 168 #7 giorni
    #neighbothood with respect to event type
@@ -387,7 +387,7 @@ def stbfMinerTop():
 #           ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
 #           ["Larceny", "Auto Theft"]]
    
-   seq2 = candidateGenRandom2(types, 72)
+   seq2 = candidateGenRandom2(types, 20)
    
    print("Livello 1:")
    for t in tree.root.children:
