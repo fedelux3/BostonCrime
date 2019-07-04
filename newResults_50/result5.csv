@@ -1,0 +1,126 @@
+dataset2018_2_One.csv,1,120,50,0.25,72
+1,"['Larceny', 'Commercial Burglary']",0.59
+2,"['Larceny', 'Other Burglary']",0.53
+3,"['Larceny', 'Larceny From Motor Vehicle']",0.5
+4,"['Larceny', 'Auto Theft']",0.48
+5,"['Larceny', 'Aggravated Assault']",0.48
+6,"['Larceny', 'Robbery']",0.46
+7,"['Aggravated Assault', 'Homicide']",0.43
+8,"['Larceny', 'Residential Burglary']",0.41
+9,"['Aggravated Assault', 'Other Burglary']",0.33
+10,"['Larceny From Motor Vehicle', 'Auto Theft']",0.31
+11,"['Larceny From Motor Vehicle', 'Commercial Burglary']",0.3
+12,"['Larceny From Motor Vehicle', 'Larceny']",0.29
+13,"['Larceny From Motor Vehicle', 'Homicide']",0.29
+14,"['Larceny From Motor Vehicle', 'Larceny', 'Commercial Burglary']",0.27
+15,"['Larceny', 'Aggravated Assault', 'Other Burglary']",0.27
+times,29,2,0,0,0,0,31,0.25
+dataset2018_One_4000.csv,1,120,50,0.25,72
+1,"['Larceny', 'Commercial Burglary']",0.7
+2,"['Larceny', 'Aggravated Assault']",0.68
+3,"['Larceny', 'Robbery']",0.67
+4,"['Larceny', 'Auto Theft']",0.63
+5,"['Larceny', 'Larceny From Motor Vehicle']",0.62
+6,"['Larceny', 'Residential Burglary']",0.61
+7,"['Larceny', 'Homicide']",0.54
+8,"['Larceny From Motor Vehicle', 'Homicide']",0.54
+9,"['Aggravated Assault', 'Homicide']",0.54
+10,"['Larceny From Motor Vehicle', 'Commercial Burglary']",0.46
+11,"['Aggravated Assault', 'Robbery']",0.44
+12,"['Larceny', 'Other Burglary']",0.43
+13,"['Larceny From Motor Vehicle', 'Aggravated Assault']",0.43
+14,"['Larceny From Motor Vehicle', 'Larceny']",0.42
+15,"['Larceny From Motor Vehicle', 'Larceny', 'Commercial Burglary']",0.42
+16,"['Larceny From Motor Vehicle', 'Larceny', 'Aggravated Assault']",0.42
+17,"['Aggravated Assault', 'Larceny']",0.41
+18,"['Larceny From Motor Vehicle', 'Auto Theft']",0.41
+19,"['Larceny From Motor Vehicle', 'Larceny', 'Robbery']",0.41
+20,"['Larceny From Motor Vehicle', 'Residential Burglary']",0.4
+21,"['Aggravated Assault', 'Larceny', 'Commercial Burglary']",0.4
+22,"['Larceny From Motor Vehicle', 'Robbery']",0.39
+23,"['Aggravated Assault', 'Commercial Burglary']",0.39
+24,"['Larceny From Motor Vehicle', 'Larceny', 'Auto Theft']",0.39
+25,"['Aggravated Assault', 'Larceny', 'Larceny From Motor Vehicle']",0.39
+26,"['Larceny', 'Larceny From Motor Vehicle', 'Commercial Burglary']",0.39
+27,"['Aggravated Assault', 'Auto Theft']",0.38
+28,"['Aggravated Assault', 'Larceny From Motor Vehicle']",0.38
+29,"['Auto Theft', 'Homicide']",0.38
+30,"['Larceny From Motor Vehicle', 'Larceny', 'Homicide']",0.38
+31,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Homicide']",0.38
+32,"['Aggravated Assault', 'Larceny', 'Homicide']",0.38
+33,"['Aggravated Assault', 'Larceny', 'Robbery']",0.38
+34,"['Aggravated Assault', 'Larceny', 'Auto Theft']",0.38
+35,"['Larceny', 'Aggravated Assault', 'Homicide']",0.38
+36,"['Aggravated Assault', 'Other Burglary']",0.36
+37,"['Larceny', 'Aggravated Assault', 'Commercial Burglary']",0.36
+38,"['Larceny', 'Aggravated Assault', 'Robbery']",0.35
+39,"['Aggravated Assault', 'Larceny', 'Residential Burglary']",0.33
+40,"['Aggravated Assault', 'Larceny', 'Other Burglary']",0.32
+41,"['Larceny', 'Aggravated Assault', 'Other Burglary']",0.32
+42,"['Larceny', 'Larceny From Motor Vehicle', 'Aggravated Assault']",0.32
+43,"['Aggravated Assault', 'Residential Burglary']",0.31
+44,"['Larceny From Motor Vehicle', 'Larceny', 'Residential Burglary']",0.31
+45,"['Larceny', 'Larceny From Motor Vehicle', 'Robbery']",0.31
+46,"['Larceny', 'Larceny From Motor Vehicle', 'Homicide']",0.31
+47,"['Larceny', 'Larceny From Motor Vehicle', 'Auto Theft']",0.31
+48,"['Larceny', 'Aggravated Assault', 'Larceny From Motor Vehicle']",0.3
+49,"['Larceny', 'Aggravated Assault', 'Larceny From Motor Vehicle', 'Homicide']",0.3
+50,"['Robbery', 'Commercial Burglary']",0.29
+51,"['Larceny From Motor Vehicle', 'Larceny', 'Aggravated Assault', 'Commercial Burglary']",0.29
+times,116,63,4,0,0,0,183,0.29
+dataset2018_One_full.csv,1,120,50,0.25,72
+1,"['Larceny', 'Aggravated Assault']",0.9
+2,"['Larceny', 'Auto Theft']",0.89
+3,"['Larceny', 'Robbery']",0.89
+4,"['Larceny', 'Larceny From Motor Vehicle']",0.87
+5,"['Larceny', 'Residential Burglary']",0.86
+6,"['Larceny', 'Other Burglary']",0.86
+7,"['Larceny', 'Homicide']",0.85
+8,"['Larceny', 'Commercial Burglary']",0.84
+9,"['Larceny From Motor Vehicle', 'Larceny']",0.75
+10,"['Larceny From Motor Vehicle', 'Larceny', 'Auto Theft']",0.75
+11,"['Larceny From Motor Vehicle', 'Larceny', 'Other Burglary']",0.75
+12,"['Larceny From Motor Vehicle', 'Larceny', 'Robbery']",0.75
+13,"['Larceny From Motor Vehicle', 'Larceny', 'Aggravated Assault']",0.75
+14,"['Larceny From Motor Vehicle', 'Auto Theft']",0.74
+15,"['Larceny From Motor Vehicle', 'Larceny', 'Commercial Burglary']",0.73
+16,"['Larceny From Motor Vehicle', 'Larceny', 'Residential Burglary']",0.73
+17,"['Larceny From Motor Vehicle', 'Commercial Burglary']",0.72
+18,"['Larceny From Motor Vehicle', 'Other Burglary']",0.72
+19,"['Larceny From Motor Vehicle', 'Aggravated Assault']",0.71
+20,"['Larceny', 'Larceny From Motor Vehicle', 'Auto Theft']",0.71
+21,"['Larceny From Motor Vehicle', 'Homicide']",0.7
+22,"['Aggravated Assault', 'Robbery']",0.7
+23,"['Larceny From Motor Vehicle', 'Robbery']",0.7
+24,"['Larceny From Motor Vehicle', 'Residential Burglary']",0.7
+25,"['Larceny', 'Larceny From Motor Vehicle', 'Other Burglary']",0.7
+26,"['Aggravated Assault', 'Larceny']",0.69
+27,"['Aggravated Assault', 'Larceny', 'Commercial Burglary']",0.69
+28,"['Aggravated Assault', 'Larceny', 'Auto Theft']",0.69
+29,"['Aggravated Assault', 'Larceny', 'Larceny From Motor Vehicle']",0.69
+30,"['Aggravated Assault', 'Larceny', 'Other Burglary']",0.69
+31,"['Aggravated Assault', 'Larceny', 'Robbery']",0.69
+32,"['Aggravated Assault', 'Larceny', 'Larceny From Motor Vehicle', 'Other Burglary']",0.69
+33,"['Aggravated Assault', 'Larceny', 'Residential Burglary']",0.68
+34,"['Larceny', 'Larceny From Motor Vehicle', 'Commercial Burglary']",0.68
+35,"['Larceny', 'Larceny From Motor Vehicle', 'Aggravated Assault']",0.68
+36,"['Larceny', 'Larceny From Motor Vehicle', 'Homicide']",0.67
+37,"['Larceny', 'Aggravated Assault', 'Robbery']",0.67
+38,"['Larceny', 'Larceny From Motor Vehicle', 'Robbery']",0.66
+39,"['Larceny', 'Larceny From Motor Vehicle', 'Residential Burglary']",0.66
+40,"['Aggravated Assault', 'Larceny', 'Larceny From Motor Vehicle', 'Auto Theft']",0.66
+41,"['Aggravated Assault', 'Other Burglary']",0.65
+42,"['Aggravated Assault', 'Larceny', 'Larceny From Motor Vehicle', 'Commercial Burglary']",0.65
+43,"['Aggravated Assault', 'Auto Theft']",0.64
+44,"['Aggravated Assault', 'Commercial Burglary']",0.64
+45,"['Larceny From Motor Vehicle', 'Larceny', 'Homicide']",0.64
+46,"['Aggravated Assault', 'Larceny', 'Homicide']",0.64
+47,"['Aggravated Assault', 'Larceny From Motor Vehicle']",0.63
+48,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Larceny']",0.63
+49,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Homicide']",0.63
+50,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Larceny', 'Commercial Burglary']",0.63
+51,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Larceny', 'Auto Theft']",0.63
+52,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Larceny', 'Homicide']",0.63
+53,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Larceny', 'Other Burglary']",0.63
+54,"['Aggravated Assault', 'Larceny From Motor Vehicle', 'Larceny', 'Robbery']",0.63
+times,950,2168,261,0,0,0,3379,0.63
