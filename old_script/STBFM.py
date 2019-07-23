@@ -6,11 +6,10 @@ Created on Thu Apr 25 17:55:14 2019
 """
 
 import time
-import random
-from datetime import datetime 
+import datetime
 import math
-import csv
-from SPTreeD import SPTree
+import mysql.connector
+from SPTree3 import SPTree
 
 #input coordinate stringhe
 #output coordinate intere 
@@ -24,35 +23,24 @@ def parserLocation(lat, long):
    #print(str)
    return [int(strlat)/100000000, int(strlong)/100000000]
 #end parserLocation
-
-#calcola la distanza in km tra le 2 coordinate x - y
-#x: (lat1,long1), y: (lat2, long2)
-#output distanza in km (3 cifre decimali)
+   
 def distanceLocation(lat1, long1, lat2, long2) :
    #conversione in radianti
-#   print("Part: " + str(lat1) + ", " + str(long1))
-#   print("Arr: " + str(lat2) + ", " + str(long2))
+   lat1 = round(lat1*(2*math.pi)/360, 2)
+   long1 = round(long1*(2*math.pi)/360, 2)
+   lat2 = round(lat2*(2*math.pi)/360, 2)
+   long2 = round(long2*(2*math.pi)/360, 2)
    
-   lat1 = round(lat1*(2*math.pi)/360, 7)
-   long1 = round(long1*(2*math.pi)/360, 7)
-   lat2 = round(lat2*(2*math.pi)/360, 7)
-   long2 = round(long2*(2*math.pi)/360, 7)
    
-   a =  math.sin(lat1) * math.sin(lat2) + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)
-   if (a > 1):
-      a = 1
-   if (a < -1):
-      print(a)
-   dist = math.acos(a) * 6371
+   dist = math.acos( math.sin(lat1) * math.sin(lat2) 
+      + math.cos(lat1) * math.cos(lat2) * math.cos(long1-long2)) * 6371
    
    assert(dist >= 0)
-#   print(dist)
-   return round(dist,3)
+   return dist
 #end distanceLocation
-
-#Calcola la differenza tra 2 date in formato "dd/MM/yyyy  hh:mm:ss"
-#input data e ora in stringa di E e dell'evento di confronto
-#output ore (intero)
+   
+#input data e ora stringa
+#output giorni (intero)
 def distanceTime(timeE, timeP) :
    assert(len(timeE) == 16)
    assert(len(timeP) == 16)
@@ -60,51 +48,45 @@ def distanceTime(timeE, timeP) :
    daysE = int(timeE[0:2])
    monthsE = int(timeE[3:5])
    yearsE = int(timeE[6:10])
-   hoursE = int(timeE[11:13])
-   
    daysP = int(timeP[0:2])
    monthsP = int(timeP[3:5])
    yearsP = int(timeP[6:10])
-   hoursP = int(timeP[11:13])
    
-   dE = datetime(yearsE, monthsE, daysE, hoursE)
-   dP = datetime(yearsP, monthsP, daysP, hoursP)
+   dE = datetime.date(yearsE, monthsE, daysE)
+   dP = datetime.date(yearsP, monthsP, daysP)
    
-   #output in ore
-   return round((dE - dP).total_seconds()/3600)
+   return abs((dE - dP).days)
 #end distanceTime
    
-#input event (tupla dell'evento), type event
+#input event, type evet
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 3
-   #raggio temporale (ore)
-   t = 168 #7 giorni
+   r = 0.1
+   #raggio temporale
+   t = 2
    #neighbothood with respect to event type
-   nfe = dict()
+   nfe = set()
    
-   #cerco il dizionario che rispetta il typeF
-   nType = tree.searchNode([typeF])
-   dataType = nType.set
-   valEv = event[1]
-   for rec in dataType.items():
-      val = rec[1]
+   sql = "SELECT * FROM " + table
+   mycursor.execute(sql)
+   
+   for crime in mycursor:
       #print(event)
       #print(crime[5])
-      [late, longe] = parserLocation(valEv[2], valEv[3])
-      [latp, longp] = parserLocation(val[2], val[3])
+      [late, longe] = parserLocation(event[4], event[5])
+      [latp, longp] = parserLocation(crime[4], crime[5])
       #se di tipo specificato
-#      if val[0] == typeF:
-      #se è entro il raggio spaziale
-      if distanceLocation(late, longe, latp, longp) <= r:
-         timee = valEv[1]
-         timep = val[1]
-         diffDays = distanceTime(timee, timep)
-         #se è entro il raggio temporale
-         #escludo se stesso
-         if diffDays > 0 and diffDays <= t and event[0] != rec[0]:
-            nfe[rec[0]] = rec[1]
+      if crime[1] == typeF:
+         #se è entro il raggio spaziale
+         if distanceLocation(late, longe, latp, longp) <= r:
+            timee = event[2]
+            timep = crime[2]
+            diffDays = distanceTime(timee, timep)
+            #se è entro il raggio temporale
+            #escludo se stesso
+            if diffDays <= t and event != crime:
+               nfe.add(crime[0])
    #end for
    return nfe
 #end neighborhood
@@ -112,38 +94,33 @@ def neighborhood(event, typeF) :
 #input tipo di evento
 #output insieme ti tutti gli eventi di quel tipo
 def setD(typeD) :
-   setReturn = dict()
+   setReturn = set()
    #print(typeD)
-   for r in data.items():
-      val = r[1]
-      if val[0] == typeD:
-         setReturn[r[0]] = val
+   sql = "SELECT * FROM " + table + " WHERE offence_code_group LIKE \"" + typeD + "\""   
+   #print(sql)
+   mycursor.execute(sql)
+   
+   for record in mycursor:
+      setReturn.add(record[0])
    return setReturn
 #end setD
 
 #input insiemeSet precedente e tipo corrente
 #output insieme di istanze associate
 def setInstances(prevSet, currentType):
-   set_return = dict()
+   set_return = set()
 
-   for event in prevSet.items():
+   for event in prevSet:
+      sql = "SELECT * FROM " + table + " WHERE incident_num = \"" + event + "\""
+      mycursor.execute(sql)
       #la tupla che mi interessa
-      #print(event)
-      neig = neighborhood(event, currentType)
+      ev = mycursor.fetchone()
+      #print(ev)
+      neig = neighborhood(ev, currentType)
       #print(neig)
-      set_return = unionDiz(set_return, neig)
+      set_return = set_return.union(neig)
    return set_return
 #end setInstance
-
-#funziona assumendo che la coppia chiave:valore sia uguale in tutti i dizionari
-#input 2 dizionari
-#output dizionario dato dall'unione dei 2 in input
-def unionDiz(d1, d2):
-   d3 = dict()
-   d3.update(d1)
-   d3.update(d2)
-   return d3
-#end unionDiz
    
 #candidate generation
 #input un insieme di sequenze significative di lunghezza uguale
@@ -209,33 +186,7 @@ def checkDouble(seq):
    else:
       return False
 #end checkDouble
-      
-#serve per ordinare gli elementi del top
-def elSort(val):
-   return val[1]
-#end
-   
-#crea un numero n di sequenze di lunghezza 2 casuali
-#input n= num di elementi; types= elenco di tipi
-#output lista di sequenze di 2 elementi
-def candidateGenRandom2(types, n):
-   l = []
-   
-   for i in range(n):
-      #genero una nuova sequenza utilizzabile
-      while True:
-         el1 = random.choice(types)
-         el2 = random.choice(types)
-         s = [el1, el2]
-         if checkDouble(s):
-            if (s not in l):
-               l.append(s)
-               break;
-#            else:
-#               print("double: " + str(s))
-   return l
-#end candidateGenRandom2
-   
+
 def candidateGenTree(candidates, tree):
    ret = []
    
@@ -296,7 +247,6 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
       #questo controllo mi permette di evitare sequenze non più presenti
       if pi is None:
          continue
-      pi = round(pi,2)
       if pi >= teta:
          #se ho ancora spazio nel top
          if len(top) < num-1:
@@ -342,9 +292,6 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
          tree.deleteNode(seq)
          print("pi: " + str(pi))
    
-   #ordino la lista dei top
-   top.sort(key = elSort, reverse = True)
-   
    #return coppia di [lista dei canidati di lunghezza lun, [lista dei top, pi del relaivo]]
    return [ret, top]
 #end verifyCandidates
@@ -362,40 +309,48 @@ def stbfMinerTop():
    top = []
    num = 50
    #creo l'albero delle sequenze   
-   #tree = SPTree()   
+   tree = SPTree()   
+   #prendo ciascun tipo di evento
+   sql = "SELECT DISTINCT offence_code_group FROM " + table
+   mycursor.execute(sql)
    
-   #inizializzo i tipi di eventi
-   types = ["Aggravated Assault", "Auto Theft", "Commercial Burglary", "Homicide",
-            "Other Burglary", "Robbery", "Larceny", "Residential Burglary", 
-            "Larceny From Motor Vehicle"]
-
-#inserisco il primo livello   
+   types = []
+   setTypes = []
+   #inizializzo i tipi di eventi e i setD a loro legati
+   #inserendo il primo layer di albero
+   for tipo in mycursor:
+      types.append(tipo[0])
+   
    for el in types:
-      s = setD(el) 
-      tree.insertNode(el, s)
+      s = setD(el)
+      setTypes.append(s)
 
+   i = 0
+   for el in types:
+      tree.insertNode(el, setTypes[i])
+      i += 1
    #genero i pattern di lunghezza 2
    #per ora sono handmade (19 sequenze)
-#   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
-#           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
-#           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
-#           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
-#           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
-#           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"],
-#           ["Larceny", "Aggravated Assault"], ["Commercial Burglary", "Other Burglary"],
-#           ["Residential Burglary", "Auto Theft"],["Homicide", "Other Burglary"],
-#           ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
-#           ["Larceny", "Auto Theft"]]
+   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
+           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
+           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
+           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
+           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
+           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"],
+           ["Larceny", "Aggravated Assault"], ["Commercial Burglary", "Other Burglary"],
+           ["Residential Burglary", "Auto Theft"],["Homicide", "Other Burglary"],
+           ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
+           ["Larceny", "Auto Theft"]]
    
-   seq2 = candidateGenRandom2(types, 20)
-   
+      
    print("Livello 1:")
    for t in tree.root.children:
       print(str(t.value) + " - " + str(len(t.set)))
    
+   
+   
    print("... generating candidates(2)")
    c2 = candidateGen(seq2, tree)
-   print(tree)
    #faccio la verifyCandidates(2)
    #print(tree)
    print("\n... verifying candidates(2)")
@@ -440,10 +395,10 @@ def stbfMinerTop():
    print("\n" + str(tree))
    
    elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
+   elapsed_new_min = round(elapsed_t/60, 3)
    elapsed_lv = elapsed_new_min - elapsed_min
    elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
    
    print("\n... generating candidates(4)")
    c4 = candidateGenTree(l3, tree)
@@ -464,10 +419,10 @@ def stbfMinerTop():
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
   
    elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
+   elapsed_new_min = round(elapsed_t/60, 3)
    elapsed_lv = elapsed_new_min - elapsed_min
    elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
    
    print("\n... generating candidates(5)")
    c5 = candidateGenTree(l4, tree)
@@ -487,10 +442,10 @@ def stbfMinerTop():
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
    elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
+   elapsed_new_min = round(elapsed_t/60, 3)
    elapsed_lv = elapsed_new_min - elapsed_min
    elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
    
    print("\n... generating candidates(6)")
    c6 = candidateGenTree(l5, tree)
@@ -510,10 +465,10 @@ def stbfMinerTop():
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
    
    elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
+   elapsed_new_min = round(elapsed_t/60, 3)
    elapsed_lv = elapsed_new_min - elapsed_min
    elapsed_min = elapsed_new_min
-   print("\n-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
   
    print("\n... generating candidates(7)")
    c7 = candidateGenTree(l6, tree)
@@ -535,48 +490,115 @@ def stbfMinerTop():
    print("\n" + str(tree))
    
    elapsed_t = time.time() - t_start
-   elapsed_new_min = round(elapsed_t, 3)
+   elapsed_new_min = round(elapsed_t/60, 3)
    elapsed_lv = elapsed_new_min - elapsed_min
    elapsed_min = elapsed_new_min
-   print("-- timer: " + str(elapsed_min) + " sec, level: " + str(elapsed_lv) + " sec --")
+   print("-- timer: " + str(elapsed_min) + " min, level: " + str(elapsed_lv) + " min --")
    
+##############################################################
+   #TEST
+      
+def testPR() :
+   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
+           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
+           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
+           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
+           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
+           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"]]
+   
+   sql = "SELECT DISTINCT offence_code_group FROM " + table
+   mycursor.execute(sql)
+   
+   types = []
+   setTypes = []
+   #inizializzo i tipi di eventi e i setD a loro legati
+   for tipo in mycursor:
+      types.append(tipo[0])
+   
+   for el in types:
+      s = setD(el)
+      setTypes.append(s)
+
+   tree = SPTree()
+   i = 0
+   for el in types:
+      tree.insertNode(el, setTypes[i])
+      i += 1
+   
+   candidateGen(seq2, tree) #inserisco sequenze di 2 elementi
+   
+   for seq in seq2:
+      n = tree.searchNode(seq)
+      pr1 = computePR(n, tree)
+      print("seq: " + str(seq) + " - pr: " + str(pr1))
+   
+#end testPR
+      
+def testPI() :
+   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
+           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
+           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
+           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
+           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
+           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"]]
+   
+   seq3 = [["Commercial Burglary", "Homicide", "Auto Theft"], 
+           ["Larceny From Motor Vehicle", "Homicide", "Auto Theft"],
+           ["Aggravated Assault", "Auto Theft", "Residential Burglary"],
+           ["Aggravated Assault", "Robbery", "Larceny"], 
+           ["Larceny From Motor Vehicle", "Commercial Burglary", "Auto Theft"]]
+   
+   sql = "SELECT DISTINCT offence_code_group FROM " + table
+   mycursor.execute(sql)
+   
+   types = []
+   setTypes = []
+   #inizializzo i tipi di eventi e i setD a loro legati
+   for tipo in mycursor:
+      types.append(tipo[0])
+   
+   for el in types:
+      s = setD(el)
+      setTypes.append(s)
+
+   tree = SPTree()
+   i = 0
+   for el in types:
+      tree.insertNode(el, setTypes[i])
+      i += 1
+   
+   candidateGen(seq2, tree) #inserisco sequenze di 2 elementi
+   candidateGen(seq3, tree)
+   i=1
+   for seq in seq2:
+      pi = computePI(seq, tree)
+      print(str(i) + ". " + str(seq) + " - pi: " + str(pi))
+      i += 1
+   for seq in seq3:
+      pi = computePI(seq, tree)
+      print(str(i) + ". " + str(seq) + " - pi: " + str(pi))
+      i += 1
+#end  testPI
 #############################
    #MAIN
 if __name__ == "__main__":
-   data = {}
-   with open("dataset2018_2_One.csv", newline="", encoding="ISO-8859-1") as filecsv:
-      
-      readData = csv.reader(filecsv, dialect = 'excel', delimiter = ";")
-      
-      recordData = [(col[0], col[1], col[2], col[4], col[5]) for col in readData]
-      
-      for record in recordData[1:]:
-         data[record[0]] = [record[1], record[2], record[3], record[4]]
-         
-   #print(data)
-   #inizializzo l'albero
-   tree = SPTree()
+   mydb = mysql.connector.connect(
+         host = "localhost",
+         user = "mysql.user",
+         passwd = "aaaa",
+         database = "bostoncrime"
+         )
+   table = "crimedata2018small"
+   mycursor = mydb.cursor()
+
+#   print("Testing testPR :")
+#   testPR()
    
+#   print("Testing testPI :")
+#   testPI()
+
    print("Testing STBF Miner Top")
    stbfMinerTop()
-
-#   print("Test distance location")
-#   latIn = 42.350791
-#   longIn = -71.062127
-#   latOut = 42.349570 
-#   longOut = -71.057149
-#   dist = distanceLocation(latIn,longIn,latOut,longOut)
-#   print(dist)
    
-#   print("Testing distance time")
-#   dE = datetime(2017, 4, 16, 4)
-#   dP = datetime(2017, 4, 15, 3)
-#   print((dE - dP).total_seconds())
    
-#   print("Testing random gen candidate")
-#   types = ["Aggravated Assault", "Auto Theft", "Commercial Burglary", "Homicide",
-#            "Other Burglary", "Robbery", "Larceny", "Residential Burglary", 
-#            "Larceny From Motor Vehicle"]
-#   l = candidateGenRandom2(types, 72)
-#   for e in l:
-#      print(e)
+   mycursor.close()

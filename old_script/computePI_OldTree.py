@@ -62,9 +62,9 @@ def distanceTime(timeE, timeP) :
 #output neigborhood event
 def neighborhood(event, typeF) :
    #raggio spaziale della location (km)
-   r = 0.1
+   r = 0.01
    #raggio temporale di 7 giorni
-   t = 3
+   t = 2
    #neighbothood with respect to event type
    nfe = set()
    
@@ -108,7 +108,8 @@ def setD(typeD) :
       setReturn.add(record[0])
    return setReturn
 #end setD
-   
+
+#SBAGLIATO PER SEQUENZE PIÙ lunghe di 2
 #input sequenza di m tipi di eventi
 #output insieme di istanze associate
 def setInstances(seqTypes):
@@ -121,30 +122,31 @@ def setInstances(seqTypes):
    
    for i in range(1,len(seqTypes)):
       currentType = seqTypes[i]
-      
+      set_return = set()
       for event in set_prev:
         
          sql = "SELECT * FROM " + table + " WHERE incident_num = \"" + event + "\""
          mycursor.execute(sql)
          #la tupla che mi interessa
          ev = mycursor.fetchone()
-         #print(ev)
+#         print(ev)
          neig = neighborhood(ev, currentType)
          #print(neig)
          set_return = set_return.union(neig)
-         
+      set_prev = set_return
+      
    return set_return
 #end setInstance
 
 #input sequenza di 2 tipi
 #output valore di partitipation rateo della sequenza
-def computePR(seqTypes):
+def computePR(seqTypes, ins):
    assert(len(seqTypes) == 2) #lunghezza sequenza deve essere di 2
-   ins = setInstances(seqTypes)
+   #ins = setInstances(seqTypes)
    n_el = len(seqTypes)
-   #print("Ins " + seqTypes[n_el-2] + ": "+ str(len(ins)))
+   print("Ins " + seqTypes[n_el-2] + ": "+ str(len(ins)))
    d_ins = setD(seqTypes[n_el-1])
-   #print("D " + seqTypes[n_el-1] + ": " + str(len(d_ins)))
+   print("D " + seqTypes[n_el-1] + ": " + str(len(d_ins)))
    pr = len(ins)/len(d_ins)
    
    return pr
@@ -155,9 +157,9 @@ def computePR(seqTypes):
 def computePI(seqTypes):
    m = len(seqTypes)
    if m <= 2:
-      return computePR(seqTypes)
+      return computePR(seqTypes, setInstances(seqTypes))
    else:
-      pr = computePR([seqTypes[m-2], seqTypes[m-1]])
+      pr = computePR([seqTypes[m-2], seqTypes[m-1]], setInstances(seqTypes))
       pi = computePI(seqTypes[:m-1])
       #print(pr)
       #print(pi)
@@ -194,7 +196,7 @@ def testmySQL() :
 
 #TEST computePI
 def testPI():
-   seq = ["Commercial Burglary", "Robbery", "Auto Theft"]
+   seq = ["Larceny", "Auto Theft", "Aggravated Assault"]
    pi = computePI(seq)
    print("valore pi finale: " + str(pi))
    
@@ -309,14 +311,14 @@ if __name__ == "__main__":
 #   print("Testing [testPR]: ")
 #   testPR()
 #   
-#   print("Testing [testPI]: ")
-#   testPI()
+   print("Testing [testPI]: ")
+   testPI()
    
 #   print("Testing [testPaper]: ")
 #   testPaper()
    
-   print("Testing [testDataset]: ")
-   testDataset()
+#   print("Testing [testDataset]: ")
+#   testDataset()
 #   
    mycursor.close()
    
