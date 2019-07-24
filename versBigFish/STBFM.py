@@ -77,6 +77,7 @@ def distanceTime(timeE, timeP) :
 #input event (tupla dell'evento), type event
 #output neigborhood event
 def neighborhood(event, typeF) :
+   ################!!! QUA MODIFICO I PARAMETRI !!!#################
    #raggio spaziale della location (km)
    r = 3.5
    #raggio temporale (ore)
@@ -263,7 +264,7 @@ def candidateGenTree(candidates, tree):
 #end candidateGenTree
 
 #input lista di [sequenza, pi]
-#output coppia [sequenza, pi] con pi minore
+#output pi minore
 def seqPIMin(seqList, num):
    teta = 1
    i = 0
@@ -395,25 +396,18 @@ def stbfMinerTop():
    print("... generating candidates(2)")
    c2 = candidateGen(seq2, tree)
    print(tree)
+
    #faccio la verifyCandidates(2)
    #print(tree)
    print("\n... verifying candidates(2)")
    [l2, top, teta] = verifyTopCandidates(c2, teta, top, num, tree)
-   
-   # print("\nL2:")
-   # i = 0
-   # for el in l2:
-   #    i += 1
-   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
     
    print("\nTop(2):")
    i = 0
    for el in top:
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-   
-   # print("\n" + str(tree))
-   
+      
    elapsed_t = round(time.time() - t_start)
    elapsed_old = elapsed_t 
    print(time.ctime() + " : " + str(elapsed_t) + " sec")
@@ -423,20 +417,12 @@ def stbfMinerTop():
    c3 = candidateGenTree(l2, tree)
    print("\n... verifying candidates(3)")
    [l3, top, teta] = verifyTopCandidates(c3, teta, top, num, tree)
-   
-   # print("\nL3:")
-   # i = 0
-   # for el in l3:
-   #    i += 1
-   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(3):")
    i = 0
    for el in top:
       i += 1
       print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-   
-   # print("\n" + str(tree))
    
    elapsed_t = round(time.time() - t_start)
    elapsed_lv = elapsed_t - elapsed_old
@@ -448,12 +434,6 @@ def stbfMinerTop():
    c4 = candidateGenTree(l3, tree)
    print("\n... verifying candidates(4)")
    [l4, top, teta] = verifyTopCandidates(c4, teta, top, num, tree)
-    
-   # print("\nL4:")
-   # i = 0
-   # for el in l4:
-   #    i += 1
-   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(4):")
    i = 0
@@ -471,12 +451,6 @@ def stbfMinerTop():
    c5 = candidateGenTree(l4, tree)
    print("\n... verifying candidates(5)")
    [l5, top, teta] = verifyTopCandidates(c5, teta, top, num, tree)
-   
-   # print("\nL5:")
-   # i = 0
-   # for el in l5:
-   #    i += 1
-   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(5):")
    i = 0
@@ -494,12 +468,6 @@ def stbfMinerTop():
    c6 = candidateGenTree(l5, tree)
    print("\n... verifying candidates(6)")
    [l6, top, teta] = verifyTopCandidates(c6, teta, top, num, tree)
-    
-   # print("\nL6:")
-   # i = 0
-   # for el in l6:
-   #    i += 1
-   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(6):")
    i = 0
@@ -517,12 +485,6 @@ def stbfMinerTop():
    c7 = candidateGenTree(l6, tree)
    print("\n... verifying candidates(7)")
    [l7, top, teta] = verifyTopCandidates(c7, teta, top, num, tree)
-   
-   # print("\nL7:")
-   # i = 0
-   # for el in l7:
-   #    i += 1
-   #    print(str(i) + ". " + str(el) + " - " + str(computePI(el, tree)))
       
    print("\nTop(7):")
    i = 0
@@ -544,7 +506,8 @@ def stbfMinerTop():
    #MAIN
 if __name__ == "__main__":
 
-   filesName = ["dataset2018_2_One.csv", "dataset2018_One_4000.csv", "dataset2018_One_full.csv"]
+   #in filesname metto tutti i file che voglio computare
+   filesName = ["dataset2018_2_One.csv"]
    wr = open("results2.csv", "a")
    writer = csv.writer(wr, dialect = 'excel', quoting= csv.QUOTE_MINIMAL)
    

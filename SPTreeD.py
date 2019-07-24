@@ -43,7 +43,7 @@ class SPTree :
    
    #genero la root dell'albero e il suo attributo di candidates validi
    def __init__(self) :
-      self.root = Node(None, None, None, None, None);
+      self.root = Node(None, None, None, None, None)
    
    def newParent2(self, currNode, newValue):
       headNode = currNode.parent2
@@ -141,7 +141,6 @@ class SPTree :
       
    def __str__(self):
       s = str(self.root) + "\n"
-      #s += "Sequenze inserite: " + str(self.candidates) + "\n"
       return s
 #end SPTree
       
