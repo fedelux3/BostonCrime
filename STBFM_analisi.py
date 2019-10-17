@@ -5,6 +5,7 @@ Created on Thu Apr 25 17:55:14 2019
 @author: fede9
 """
 
+import sys
 import time
 import random
 from datetime import datetime 
@@ -79,10 +80,12 @@ def distanceTime(timeE, timeP) :
 def neighborhood(event, typeF) :
    ################!!! QUA MODIFICO I PARAMETRI !!!#################
    #raggio spaziale della location (km)
-   r = 3.5
+   #r = 2
    #raggio temporale (ore)
-   t = 120 #5 giorni
+   #t = 168 #5 giorni
    #neighbothood with respect to event type
+   global r, ti
+
    nfe = dict()
    
    #cerco il dizionario che rispetta il typeF
@@ -104,7 +107,7 @@ def neighborhood(event, typeF) :
          diffDays = distanceTime(timee, timep)
          #se è entro il raggio temporale
          #escludo se stesso
-         if diffDays > 0 and diffDays <= t and event[0] != rec[0]:
+         if diffDays > 0 and diffDays <= ti and event[0] != rec[0]:
             nfe[rec[0]] = rec[1]
    #end for
    return nfe
@@ -265,7 +268,9 @@ def candidateGenTree(candidates, tree):
 
 #input lista di [sequenza, pi]
 #output pi minore
-def seqPIMin(seqList, num):
+def seqPIMin(seqList):
+   global teta, num
+
    teta = 1
    i = 0
    #verifico che vi siano n-1 elementi nella lista che superino il nuovo teta
@@ -288,7 +293,9 @@ def seqPIMin(seqList, num):
 #verifyTopCandidates, si occupa del calcolo del pi di ciascun candidato
 #estraendo solo i primi n elementi in base al valore di pi
 #output lista di coppie [sequenza - pi] (n elementi)
-def verifyTopCandidates(candidates, teta, top, num, tree):
+def verifyTopCandidates(candidates, top, tree):
+   global teta, num
+
    ret = []
    
    for seq in candidates:
@@ -307,14 +314,14 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
          elif len(top) == num-1:
             top.append([seq, pi])
             ret.append(seq)
-            teta = seqPIMin(top, num)
+            teta = seqPIMin(top)
             print("new teta (==): " + str(teta))
          else:
             #se ho riempito tutto il top
             top.append([seq, pi])
             ret.append(seq)
             if pi > teta:
-               teta = seqPIMin(top, num)
+               teta = seqPIMin(top)
                print("new teta (>): " + str(teta))
                #cancello tutti i top con pi < teta
                for el in top:
@@ -345,7 +352,7 @@ def verifyTopCandidates(candidates, teta, top, num, tree):
    #ordino la lista dei top
    top.sort(key = elSort, reverse = True)
    #return coppia di [lista dei canidati di lunghezza lun, [lista dei top, pi del relaivo]]
-   return [ret, top, teta]
+   return [ret, top]
 #end verifyCandidates
    
 ################ stbfMiner Top ####################
@@ -354,38 +361,25 @@ def stbfMinerTop():
    #teta valore di threshold rispetto al pi
    #top è l'array in cui salvo i migliori risultati
    #num è il numero di risultati desiderati
+   global teta, num, r, ti
+
    t_start = time.time()
    elapsed_t = t_start
    #lista per scrivere i tempi nel csv
    ts = []
-   teta = 0.25
    top = []
-   num = 50
-   #creo l'albero delle sequenze   
-   #tree = SPTree()   
    
    #inizializzo i tipi di eventi
    types = ["Aggravated Assault", "Auto Theft", "Commercial Burglary", "Homicide",
             "Other Burglary", "Robbery", "Larceny", "Residential Burglary", 
             "Larceny From Motor Vehicle"]
 
-#inserisco il primo livello   
+   #inserisco il primo livello   
    for el in types:
       s = setD(el) 
       tree.insertNode(el, s)
 
    #genero i pattern di lunghezza 2
-   #per ora sono handmade (19 sequenze)
-#   seq2 = [["Aggravated Assault", "Auto Theft"], ["Commercial Burglary", "Homicide"], 
-#           ["Other Burglary", "Robbery"], ["Homicide", "Auto Theft"], 
-#           ["Larceny", "Residential Burglary"], ["Aggravated Assault", "Robbery"],
-#           ["Larceny From Motor Vehicle", "Homicide"],["Commercial Burglary", "Auto Theft"],
-#           ["Robbery", "Larceny"], ["Larceny From Motor Vehicle", "Commercial Burglary"],
-#           ["Auto Theft", "Residential Burglary"], ["Auto Theft", "Aggravated Assault"],
-#           ["Larceny", "Aggravated Assault"], ["Commercial Burglary", "Other Burglary"],
-#           ["Residential Burglary", "Auto Theft"],["Homicide", "Other Burglary"],
-#           ["Other Burglary", "Larceny"],["Larceny From Motor Vehicle", "Aggravated Assault"],
-#           ["Larceny", "Auto Theft"]]
    numSeq2 = 72
    seq2 = candidateGenRandom2(types, numSeq2)
    
@@ -395,13 +389,13 @@ def stbfMinerTop():
    
    print("... generating candidates(2)")
    c2 = candidateGen(seq2, tree)
-   print(tree)
 
    #faccio la verifyCandidates(2)
    #print(tree)
    print("\n... verifying candidates(2)")
-   [l2, top, teta] = verifyTopCandidates(c2, teta, top, num, tree)
-    
+
+   [l2, top] = verifyTopCandidates(c2, top, tree)
+   
    print("\nTop(2):")
    i = 0
    for el in top:
@@ -412,105 +406,72 @@ def stbfMinerTop():
    elapsed_old = elapsed_t 
    print(time.ctime() + " : " + str(elapsed_t) + " sec")
    ts.append(elapsed_t)
-   
-   print("\n... generating candidates(3)")
-   c3 = candidateGenTree(l2, tree)
-   print("\n... verifying candidates(3)")
-   [l3, top, teta] = verifyTopCandidates(c3, teta, top, num, tree)
+   ck = c2
+   lk = l2
+   k = 3
+   while lk:
+      print("\n... generating candidates(" + str(k) + ")")
+      ck = candidateGenTree(lk, tree)
+      print("\n... verifying candidates(" + str(k) + ")")
+      [lk, top] = verifyTopCandidates(ck, top, tree)
+         
+      print("\nTop(" + str(k) + "):")
+      i = 0
+      for el in top:
+         i += 1
+         print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
       
-   print("\nTop(3):")
-   i = 0
-   for el in top:
-      i += 1
-      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-   
-   elapsed_t = round(time.time() - t_start)
-   elapsed_lv = elapsed_t - elapsed_old
-   elapsed_old = elapsed_t
-   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
-   ts.append(elapsed_lv)
+      elapsed_t = round(time.time() - t_start)
+      elapsed_lv = elapsed_t - elapsed_old
+      elapsed_old = elapsed_t
+      print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
+      ts.append(elapsed_lv)
 
-   print("\n... generating candidates(4)")
-   c4 = candidateGenTree(l3, tree)
-   print("\n... verifying candidates(4)")
-   [l4, top, teta] = verifyTopCandidates(c4, teta, top, num, tree)
-      
-   print("\nTop(4):")
+      k += 1
+   #end while
+   
+   support = 0
+   confidence = 0
+   lift = 0
+   #scrivo nel file
    i = 0
    for el in top:
       i += 1
-      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-  
-   elapsed_t = round(time.time() - t_start)
-   elapsed_lv = elapsed_t - elapsed_old
-   elapsed_old = elapsed_t
-   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
-   ts.append(elapsed_lv)
+      currSeq = el[0]
+      nodeFin = tree.searchNode(currSeq)
+      support = len(nodeFin.set) #supporto - numero di eventi in cui è possibile la sequenza
+      
+      confidence = support / len(data.items()) #confidenza della sequenza
+      freqFin = len(setD(nodeFin.value)) #frequenza del tipo finale
+      lift = confidence / freqFin
+      writer.writerow((i, el[0], el[1], support, confidence, lift))
 
-   print("\n... generating candidates(5)")
-   c5 = candidateGenTree(l4, tree)
-   print("\n... verifying candidates(5)")
-   [l5, top, teta] = verifyTopCandidates(c5, teta, top, num, tree)
-      
-   print("\nTop(5):")
-   i = 0
-   for el in top:
-      i += 1
-      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-   
-   elapsed_t = round(time.time() - t_start)
-   elapsed_lv = elapsed_t - elapsed_old
-   elapsed_old = elapsed_t
-   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
-   ts.append(elapsed_lv)
+   writer.writerow((file, r, ti, num, teta, ts[:len(ts)-1], elapsed_t))
+#end stbfMinerTop
 
-   print("\n... generating candidates(6)")
-   c6 = candidateGenTree(l5, tree)
-   print("\n... verifying candidates(6)")
-   [l6, top, teta] = verifyTopCandidates(c6, teta, top, num, tree)
-      
-   print("\nTop(6):")
-   i = 0
-   for el in top:
-      i += 1
-      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-   
-   elapsed_t = round(time.time() - t_start)
-   elapsed_lv = elapsed_t - elapsed_old
-   elapsed_old = elapsed_t
-   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --")
-   ts.append(elapsed_lv)
-   
-   print("\n... generating candidates(7)")
-   c7 = candidateGenTree(l6, tree)
-   print("\n... verifying candidates(7)")
-   [l7, top, teta] = verifyTopCandidates(c7, teta, top, num, tree)
-      
-   print("\nTop(7):")
-   i = 0
-   for el in top:
-      i += 1
-      print(str(i) + ". " + str(el[0]) + " - " + str(el[1]))
-  
-   # print("\n" + str(tree))
-   print("\nteta finale: " + str(teta))
-   
-   elapsed_t = round(time.time() - t_start)
-   elapsed_lv = elapsed_t - elapsed_old
-   elapsed_old = elapsed_t
-   ts.append(elapsed_lv)
-   print("\n-- timer: " + str(elapsed_t) + " sec, level: " + str(elapsed_lv) + " sec --\n")
-   
-   writer.writerow((file, 3.5, 120, num, teta, ts[0], ts[1], ts[2], ts[3], ts[4], ts[5], elapsed_t, numSeq2))
 #############################
    #MAIN
 if __name__ == "__main__":
 
    #in filesname metto tutti i file che voglio computare
-   filesName = ["dataset2018_2_One.csv"]
-   wr = open("results2.csv", "a")
+   filesName = ["dataset18_3129.csv"]
+   wr = open("results.csv", "a")
    writer = csv.writer(wr, dialect = 'excel', quoting= csv.QUOTE_MINIMAL)
    
+   teta = float(sys.argv[1])
+   num = int(sys.argv[2])
+   r = float(sys.argv[3])
+   ti = int(sys.argv[4])
+
+   if teta < 0 or teta >= 1:
+      exit("valore di teta non valido")
+   if num <= 0:
+      exit("valore di num non valido")
+   if r <= 0:
+      exit("valore del raggio non valido")
+   if ti <= 0:
+      exit("valore del tempo non valido")
+
    for file in filesName:
       data = {}
       with open(file) as filecsv:
@@ -522,30 +483,15 @@ if __name__ == "__main__":
          for record in recordData[1:]:
             data[record[0]] = [record[1], record[2], record[3], record[4]]
          
-      #print(data)
       #inizializzo l'albero
       tree = SPTree()
       
       print("Testing STBF Miner Top")
+      teta = float(sys.argv[1])
+
       stbfMinerTop()
 
-#   print("Test distance location")
-#   latIn = 42.35115433
-#   longIn = -71.06547895
-#   latOut = 42.35060526 
-#   longOut = -71.05923027
-#   dist = distanceLocation(latIn,longIn,latOut,longOut)
-#   print(dist)
-   
-#   print("Testing distance time")
-#   dE = datetime(2017, 4, 16, 4)
-#   dP = datetime(2017, 4, 15, 3)
-#   print((dE - dP).total_seconds())
-   
-#   print("Testing random gen candidate")
-#   types = ["Aggravated Assault", "Auto Theft", "Commercial Burglary", "Homicide",
-#            "Other Burglary", "Robbery", "Larceny", "Residential Burglary", 
-#            "Larceny From Motor Vehicle"]
-#   l = candidateGenRandom2(types, 72)
-#   for e in l:
-#      print(e)
+#formato input da riga di comando:
+#teta, n, raggioSpazio, intervalloTempo(ore)
+#formato output
+#nomeFile, raggioSpazio, intervalloTempo, num, tetaFinal, [tempixlv], tempoTot
