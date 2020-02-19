@@ -78,12 +78,6 @@ def distanceTime(timeE, timeP) :
 #input event (tupla dell'evento), type event
 #output neigborhood event
 def neighborhood(event, typeF) :
-   ################!!! QUA MODIFICO I PARAMETRI !!!#################
-   #raggio spaziale della location (km)
-   #r = 2
-   #raggio temporale (ore)
-   #t = 168 #5 giorni
-   #neighbothood with respect to event type
    global r, ti
 
    nfe = dict()
@@ -439,12 +433,13 @@ def stbfMinerTop():
       i += 1
       currSeq = el[0]
       nodeFin = tree.searchNode(currSeq)
-      support = len(nodeFin.set) #supporto - numero di eventi in cui è possibile la sequenza
+      if nodeFin is not None:
+         support = len(nodeFin.set) #supporto - numero di eventi in cui è possibile la sequenza
       
-      confidence = support / len(data.items()) #confidenza della sequenza
-      freqFin = len(setD(nodeFin.value)) #frequenza del tipo finale
-      lift = confidence / freqFin
-      writer.writerow((i, el[0], el[1], support, confidence, lift))
+         confidence = support / len(data.items()) #confidenza della sequenza
+         freqFin = len(setD(nodeFin.value)) #frequenza del tipo finale
+         lift = confidence / freqFin
+         writer.writerow((i, el[0], el[1], support, confidence, lift))
 
    writer.writerow((file, r, ti, num, teta, ts[:len(ts)-1], elapsed_t))
 #end stbfMinerTop
@@ -454,7 +449,7 @@ def stbfMinerTop():
 if __name__ == "__main__":
 
    #in filesname metto tutti i file che voglio computare
-   filesName = ["dataset18_3129.csv"]
+   filesName = ["dataset2018_2_One.csv"]
    wr = open("results.csv", "a")
    writer = csv.writer(wr, dialect = 'excel', quoting= csv.QUOTE_MINIMAL)
    
@@ -491,6 +486,7 @@ if __name__ == "__main__":
 
       stbfMinerTop()
 
+### GUIDA ALL'UTILIZZO
 #formato input da riga di comando:
 #teta, n, raggioSpazio, intervalloTempo(ore)
 #formato output

@@ -78,12 +78,6 @@ def distanceTime(timeE, timeP) :
 #input event (tupla dell'evento), type event
 #output neigborhood event
 def neighborhood(event, typeF) :
-   ################!!! QUA MODIFICO I PARAMETRI !!!#################
-   #raggio spaziale della location (km)
-   #r = 2
-   #raggio temporale (ore)
-   #t = 168 #5 giorni
-   #neighbothood with respect to event type
    global r, ti
 
    nfe = dict()
@@ -481,6 +475,7 @@ if __name__ == "__main__":
 
       stbfMinerTop()
 
+### GUIDA ALL'UTILIZZO
 #formato input da riga di comando:
 #teta, n, raggioSpazio, intervalloTempo(ore)
 #formato output
